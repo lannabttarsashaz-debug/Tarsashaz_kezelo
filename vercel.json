@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://tarsashaz-naplo.firebaseapp.com/__/auth/:path*"
+    }
+  ]
+}
+

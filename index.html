@@ -1,0 +1,3275 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Property Management</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(184, 134, 11, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 
+                0 30px 90px rgba(0, 0, 0, 0.5),
+                0 0 1px 1px rgba(212, 175, 55, 0.3);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(20px);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 30px 30px 0 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 3.5em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-family: 'Playfair Display', serif;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            padding: 20px 25px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-bottom: 25px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 50%, #d4af37 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 16px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 25px;
+            margin-right: 15px;
+            box-shadow: 
+                0 6px 20px rgba(212, 175, 55, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 10px 30px rgba(212, 175, 55, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 12px rgba(192, 192, 192, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 18px rgba(192, 192, 192, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.4);
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(44, 62, 80, 0.5);
+        }
+
+        .btn-icon {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .houses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .house-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #d4af37;
+            border-radius: 20px;
+            padding: 35px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.08),
+                0 1px 3px rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .house-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #c0c0c0, #d4af37);
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        .house-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 20px 50px rgba(212, 175, 55, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.15);
+            border-color: #c0c0c0;
+        }
+
+        .house-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .house-events-count {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .house-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            display: flex;
+            gap: 12px;
+        }
+
+        .house-actions button {
+            flex: 1;
+            padding: 11px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 45px;
+            border-radius: 25px;
+            max-width: 650px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.3),
+                0 0 1px 1px rgba(212, 175, 55, 0.2);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 25px 25px 0 0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s;
+            background: #fafbfc;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* ===== KÉPFELTÖLTÉS ===== */
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .image-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 50%, #d4af37 100%);
+            border: none;
+            border-radius: 25px;
+            color: #1a1a2e;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            font-family: 'Montserrat', sans-serif;
+            width: fit-content;
+        }
+
+        .image-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .paperclip-icon {
+            font-size: 18px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .image-preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid #d4af37;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .image-preview-remove:hover {
+            background: #e74c3c;
+            transform: scale(1.1);
+        }
+
+        /* Esemény thumbnail megjelenítés */
+        .event-images {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            align-items: center;
+        }
+
+        .event-images-print-note {
+            display: none; /* Alapértelmezetten rejtett, csak nyomtatáskor látszik */
+        }
+
+        .event-thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid #d4af37;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .event-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .event-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .event-images-more {
+            color: #d4af37;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+
+        /* Kép popup */
+        .image-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .image-popup-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .image-popup-close:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .image-popup-img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 15px;
+            object-fit: contain;
+        }
+
+        .image-popup-nav {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .image-popup-nav button {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .image-popup-nav button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .image-popup-nav button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .form-buttons button {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+        }
+
+        .events-list {
+            margin-top: 40px;
+        }
+
+        .status-section {
+            margin-bottom: 40px;
+            border: 2px solid #c0c0c0;
+            border-radius: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            box-shadow: 
+                0 5px 20px rgba(0, 0, 0, 0.08),
+                0 0 1px rgba(212, 175, 55, 0.3);
+        }
+
+        .event-group {
+            background: white;
+            border: 2px solid #d4af37;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+            position: relative; /* Checkbox pozícionálásához */
+            box-shadow: 
+                0 3px 10px rgba(0, 0, 0, 0.08),
+                0 0 1px rgba(212, 175, 55, 0.2);
+        }
+
+        .event-group.has-children {
+            border-width: 4px;
+            border-left: 8px solid #d4af37;
+            box-shadow: 
+                0 4px 15px rgba(212, 175, 55, 0.25),
+                0 0 1px rgba(212, 175, 55, 0.3);
+        }
+
+        .event-group:hover {
+            box-shadow: 
+                0 8px 25px rgba(212, 175, 55, 0.2),
+                0 0 1px rgba(192, 192, 192, 0.4);
+            border-color: #c0c0c0;
+        }
+
+        .event-group.has-children:hover {
+            box-shadow: 
+                0 10px 30px rgba(212, 175, 55, 0.3),
+                0 0 1px rgba(192, 192, 192, 0.5);
+        }
+
+        .event-main {
+            background: white;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .event-main:hover {
+            background: #fafbfc;
+        }
+
+        .event-main.has-children {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .event-dates {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .event-date {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .event-closed-date {
+            font-weight: 600;
+            color: #27ae60;
+            font-size: 14px;
+        }
+
+        .event-type {
+            display: inline-block;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .event-description {
+            color: #34495e;
+            margin-top: 12px;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .event-reporter {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .event-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .child-events {
+            display: none;
+            padding: 0 25px 25px 50px;
+            background: #f8f9fa;
+        }
+
+        .child-events.open {
+            display: block;
+        }
+
+        .child-event {
+            background: white;
+            padding: 20px;
+            border-left: 4px solid #d4af37;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                0 0 1px rgba(212, 175, 55, 0.3);
+        }
+
+        .expand-icon {
+            display: inline-block;
+            margin-right: 12px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #d4af37;
+            font-weight: 700;
+        }
+
+        .expand-icon.open {
+            transform: rotate(90deg);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 30px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon {
+            font-size: 72px;
+            margin-bottom: 25px;
+            opacity: 0.7;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .color-picker-group input[type="color"] {
+            width: 70px;
+            height: 45px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .color-picker-group input[type="number"] {
+            width: 90px;
+        }
+
+        .event-types-list, .status-list {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .event-type-item, .status-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 18px 22px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            flex-wrap: wrap;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                0 0 1px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s;
+        }
+
+        .event-type-item:hover, .status-item:hover {
+            border-color: #c0c0c0;
+            box-shadow: 
+                0 4px 15px rgba(212, 175, 55, 0.2),
+                0 0 1px rgba(192, 192, 192, 0.4);
+        }
+
+        .event-type-color, .status-color {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 3px solid #d4af37;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.15),
+                0 0 1px rgba(212, 175, 55, 0.4);
+        }
+
+        .event-type-name, .status-name {
+            font-weight: 700;
+            flex: 1;
+            color: #2c3e50;
+            letter-spacing: 0.5px;
+        }
+
+        .status-order {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            color: #1a1a2e;
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 25px;
+            }
+
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .houses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 30px 25px;
+            }
+
+            .btn-primary {
+                padding: 14px 25px;
+                font-size: 14px;
+            }
+
+            .sidebar-menu {
+                width: 280px;
+            }
+        }
+
+        /* Hamburger menü */
+        .hamburger-btn {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 3000;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 15px rgba(212, 175, 55, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #1a1a2e;
+            font-weight: 300;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 6px 20px rgba(212, 175, 55, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .hamburger-btn:active {
+            transform: scale(0.98);
+        }
+
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+            z-index: 2500;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 100px 30px 30px 30px;
+        }
+
+        .sidebar-menu.open {
+            right: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .menu-section {
+            margin-bottom: 35px;
+        }
+
+        .menu-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d4af37;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .menu-item:hover {
+            border-color: #d4af37;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .menu-item-icon {
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+
+        /* ===== MODUL KÁRTYÁK ===== */
+        .module-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .module-menu-card {
+            background: linear-gradient(160deg, #fffbe6 0%, #f5e6b0 50%, #e8c94a 100%);
+            border: 2px solid #1a1a1a;
+            border-radius: 14px;
+            padding: 14px 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow:
+                0 3px 10px rgba(0,0,0,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.6);
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+
+        .module-menu-card:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow:
+                0 8px 20px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(212,175,55,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.7);
+            border-color: #000;
+        }
+
+        .module-menu-card:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .module-menu-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        .module-menu-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+            font-family: 'Montserrat', sans-serif;
+            display: block;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .page-header h1 {
+            margin-bottom: 0;
+        }
+.filter-select {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #d4af37;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.2);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .filter-select:hover {
+            border-color: #c0c0c0;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* PDF gomb - oldal alján (nem fixed) */
+        .pdf-btn-container {
+            display: none; /* Alapból rejtett */
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 30px 0 40px 0;
+            margin-top: 20px;
+        }
+
+        .print-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .print-control-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #f4e5c3 0%, #d4af37 50%, #b8860b 100%);
+            border: 2px solid #8b6914;
+            color: #2c2416;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+
+        .print-control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+        }
+
+        .print-control-btn:active {
+            transform: translateY(0);
+        }
+
+        .pdf-btn-container button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9b8a6d 0%, #d4af37 50%, #8b6914 100%);
+            border: 3px solid #f4e5c3;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
+            transition: all 0.3s;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .pdf-btn-container button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.7);
+        }
+
+        .pdf-btn-container button:active {
+            transform: scale(0.95);
+        }
+
+        /* Print selection checkbox */
+        .print-checkbox {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .print-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .print-checkbox-custom {
+            display: block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #d4af37;
+            border-radius: 6px;
+            background: white;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .print-checkbox input[type="checkbox"]:checked + .print-checkbox-custom {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            border-color: #8b6914;
+        }
+
+        .print-checkbox-custom::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: white;
+            font-size: 16px;
+            font-weight: 900;
+            transition: transform 0.2s;
+        }
+
+        .print-checkbox input[type="checkbox"]:checked + .print-checkbox-custom::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Háznév csak nyomtatáshoz - alapból rejtett */
+        .house-name-for-print {
+            display: none;
+        }
+
+        /* Kijelölt esemény vizuális jelzés */
+        .event-group.print-selected {
+            border-color: #d4af37;
+            border-width: 3px;
+            box-shadow: 
+                0 5px 20px rgba(212, 175, 55, 0.3),
+                0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+
+        
+        /* ===== LOGIN & FIREBASE UI ===== */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .login-screen.hidden {
+            display: none;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .login-title {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 50%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 900;
+        }
+        
+        .login-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        
+        .login-loading {
+            color: #d4af37;
+            margin-top: 20px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .login-loading.active {
+            display: block;
+        }
+        
+        .google-signin-btn {
+            background: white;
+            border: 2px solid #d4af37;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .google-signin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+            border-color: #c0c0c0;
+        }
+        
+        .google-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .sync-indicator {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            z-index: 2900;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sync-indicator.hidden {
+            display: none;
+        }
+        
+        .sync-indicator.syncing {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin: 15px;
+            border: 2px solid #d4af37;
+        }
+        
+        .user-info.hidden {
+            display: none;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.4);
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #f4e5c3 0%, #d4af37 100%);
+        }
+
+        /* ===== PRINT STYLES (PDF/Nyomtatás) ===== */
+        @media print {
+            /* GLOBÁLIS TISZTÍTÁS - Minden árnyék és színátmenet eltávolítása */
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Elrejtendő elemek nyomtatáskor */
+            .header,
+            .sync-indicator,
+            .menu-btn,
+            .google-signin-btn,
+            .btn-icon,
+            .btn-secondary,
+            .btn-delete,
+            .btn-primary,
+            .event-actions,
+            .image-upload-btn,
+            .back-btn,
+            .filter-container,
+            .pdf-btn-container,
+            .print-checkbox,
+            .print-controls,
+            body::before,
+            body::after,
+            .container::before,
+            .container::after,
+            button {
+                display: none !important;
+            }
+
+            /* KRITIKUS: Státusz fejlécek elrejtése */
+            .status-section > h3 {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+            }
+
+            /* Csak a kijelölt események jelenjenek meg nyomtatáskor */
+            .event-group:not(.print-selected) {
+                display: none !important;
+            }
+
+            /* SZÉP DIZÁJN VISSZAHOZÁSA - Kijelölt események */
+            .event-group.print-selected {
+                border: 2px solid #d4af37 !important;
+                border-radius: 12px !important;
+                padding: 12px !important;
+                margin-bottom: 12px !important;
+                background: white !important;
+                background-color: white !important;
+                box-shadow: none !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Státusz szekció padding/margin nullázása */
+            .status-section {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: none !important;
+            }
+
+            /* Esemény típus címke szép megjelenítése */
+            .event-type {
+                display: inline-block !important;
+                padding: 4px 10px !important;
+                border-radius: 12px !important;
+                font-size: 9pt !important;
+                font-weight: 600 !important;
+                color: white !important;
+            }
+
+            /* Dátumok szép megjelenítése */
+            .event-date,
+            .event-closed-date {
+                font-size: 9pt !important;
+                font-weight: 600 !important;
+            }
+
+            /* Leírás olvasható formázása */
+            .event-description {
+                font-size: 10pt !important;
+                line-height: 1.4 !important;
+                margin: 8px 0 !important;
+            }
+
+            /* Bejelentő szép formázása */
+            .event-reporter {
+                font-size: 9pt !important;
+                color: #666 !important;
+                font-style: italic !important;
+            }
+
+            /* Háznév megjelenítése PDF-ben */
+            .house-name-for-print {
+                display: block !important;
+                font-size: 11pt !important;
+                font-weight: 700 !important;
+                color: #2c3e50 !important;
+                background: #f8f9fa !important;
+                padding: 6px 12px !important;
+                border-left: 4px solid #d4af37 !important;
+                margin-bottom: 8px !important;
+                border-radius: 4px !important;
+            }
+
+            /* Tervezett intézkedés kiemelése */
+            .event-main > div[style*="Tervezett intézkedés"] {
+                margin-top: 10px !important;
+                padding-top: 10px !important;
+                border-top: 1px solid #e0e0e0 !important;
+            }
+
+            /* Oldal beállítások - kevesebb margó */
+            @page {
+                margin: 5mm;
+                size: A4;
+            }
+
+            html {
+                background: white !important;
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            body {
+                background: white !important;
+                background-color: white !important;
+                color: black !important;
+                font-size: 9pt;
+                line-height: 1.3;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Container teljes szélességre nyomtatáskor */
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                background-color: white !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: none !important;
+                left: 0 !important;
+                transform: none !important;
+            }
+
+            /* Page konténer is teljes szélesség */
+            .page {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Events list tisztítása */
+            .events-list {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* KRITIKUS: Dobozok ne legyenek kettévágva! */
+            .event-group,
+            .event-main,
+            .child-event,
+            .status-section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Szekció címek - csak háttér nullázás */
+            .status-section {
+                background: white !important;
+                background-color: white !important;
+            }
+
+
+            /* Esemény header - kompakt */
+            .event-header {
+                margin-bottom: 4px !important;
+            }
+
+            .event-date,
+            .event-closed-date {
+                font-size: 8pt !important;
+                padding: 2px 4px !important;
+                margin-right: 4px !important;
+            }
+
+            .event-type {
+                font-size: 8pt !important;
+                padding: 2px 6px !important;
+                border: 1px solid currentColor !important;
+            }
+
+            /* Leírás, bejelentő - kompakt */
+            .event-description {
+                font-size: 9pt !important;
+                margin: 4px 0 !important;
+                padding: 4px 0 !important;
+                line-height: 1.3 !important;
+                color: black !important;
+            }
+
+            .event-reporter {
+                font-size: 8pt !important;
+                margin: 3px 0 !important;
+                color: #555 !important;
+            }
+
+            /* Tervezett intézkedés - kompakt */
+            .event-reporter + div {
+                margin-top: 4px !important;
+                padding-top: 4px !important;
+            }
+
+            /* Gyerek események - SZÉP dizájn */
+            .child-event {
+                border: 1px solid #d4af37 !important;
+                border-left: 3px solid #d4af37 !important;
+                border-radius: 8px !important;
+                margin: 6px 0 6px 12px !important;
+                padding: 8px 10px !important;
+                background: #fafafa !important;
+                background-color: #fafafa !important;
+                page-break-inside: avoid !important;
+            }
+
+            .child-events {
+                margin-top: 8px !important;
+                padding-left: 0 !important;
+            }
+
+            /* Képek ELREJTÉSE nyomtatáskor */
+            .event-images {
+                display: none !important;
+            }
+
+            /* Képszám jelzés megjelenítése nyomtatáskor */
+            .event-images-print-note {
+                display: block !important;
+                font-size: 8pt;
+                color: #666;
+                font-style: italic;
+                margin: 3px 0;
+            }
+
+            /* Fejléc optimalizálás - kompakt */
+            .house-page h1,
+            #houseTitle,
+            #statusViewTitle {
+                font-size: 14pt !important;
+                margin: 0 0 6px 0 !important;
+            }
+
+            .status-section h3 {
+                font-size: 11pt !important;
+                margin: 6px 0 4px 0 !important;
+                padding: 4px 6px !important;
+            }
+
+            /* Expand icon elrejtése */
+            .expand-icon {
+                display: none !important;
+            }
+
+            /* Gyerek események mindig láthatóak */
+            .child-events {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h1 class="login-title">ELITE PROPERTY</h1>
+            <p class="login-subtitle">Management Excellence</p>
+            <button class="google-signin-btn" onclick="signInWithGoogle()">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Bejelentkezés Google-lal
+            </button>
+            <p class="login-loading" id="loginLoading">Betöltés...</p>
+        </div>
+    </div>
+    
+    <!-- Sync Indicator -->
+    <div class="sync-indicator hidden" id="syncIndicator">
+        <span>☁️</span>
+        <span id="syncText">Szinkronizálva</span>
+    </div>
+    
+    <!-- User Info -->
+
+    <!-- Hamburger menü gomb -->
+    <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+
+    <!-- Oldalsó menü overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMenu()"></div>
+
+    <!-- Oldalsó menü -->
+    <div class="sidebar-menu" id="sidebarMenu">
+
+        <div class="menu-section">
+            <div class="menu-section-title">MODULOK</div>
+            <div class="module-menu-grid">
+                <a href="contacts.html" class="module-menu-card">
+                    <span class="module-menu-icon">📇</span>
+                    <span class="module-menu-label">Névjegyek</span>
+                </a>
+                <a href="notes.html" class="module-menu-card">
+                    <span class="module-menu-icon">📝</span>
+                    <span class="module-menu-label">Jegyzetek</span>
+                </a>
+                <a href="documents.html" class="module-menu-card">
+                    <span class="module-menu-icon">🗂️</span>
+                    <span class="module-menu-label">Dok.tár</span>
+                </a>
+                <a href="house-profile.html" class="module-menu-card">
+                    <span class="module-menu-icon">🏛️</span>
+                    <span class="module-menu-label">Házprofilok</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">NÉZETEK</div>
+            <div id="statusViewsMenu">
+                <!-- Dinamikusan generált státusz nézetek -->
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">KEZELÉS</div>
+            <div class="menu-item" onclick="openAddHouseModal(); closeMenu();">
+                <span class="menu-item-icon">🏛️</span>
+                <span>Új Ingatlan</span>
+            </div>
+            <div class="menu-item" onclick="openEventTypesModal(); closeMenu();">
+                <span class="menu-item-icon">◈</span>
+                <span>Eseménytípusok</span>
+            </div>
+            <div class="menu-item" onclick="openStatusModal(); closeMenu();">
+                <span class="menu-item-icon">◆</span>
+                <span>Státuszok</span>
+            </div>
+        </div>
+
+        <div class="user-info hidden" id="userInfo">
+    <img class="user-avatar" id="userAvatar" src="" alt="">
+    <span id="userName"></span>
+    <button class="logout-btn" onclick="signOut()">Kilépés</button>
+        </div>
+        
+    </div>
+
+    <div class="container">
+        <!-- Főoldal: Házak listája -->
+        <div id="homePage" class="page active">
+            <div class="page-header">
+                <h1>ELITE PROPERTY</h1>
+            </div>
+            <p class="subtitle">Management Excellence</p>
+
+            <div class="houses-grid" id="housesList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏛️</div>
+                    <p>Prémium Portfólió</p>
+                    <p>Kezdje el első exkluzív ingatlanja hozzáadásával</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Események oldal -->
+        <div id="eventsPage" class="page">
+            <button class="back-btn" onclick="showHomePage()">← Portfólió</button>
+            
+            <h2 id="houseTitle"></h2>
+            
+            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 25px;">
+                <button class="btn-primary" onclick="openNewEventModal()">✦ Új Esemény</button>
+                
+                <select id="eventTypeFilter" class="filter-select" onchange="filterEventsByType()">
+                    <option value="">🔍 Összes típus</option>
+                </select>
+            </div>
+
+            <div class="events-list" id="eventsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>Eseménynapló</p>
+                </div>
+            </div>
+
+            <!-- PDF gomb és kiválasztás gombok az oldal alján -->
+            <div class="pdf-btn-container" id="pdfBtnEvents">
+                <div class="print-controls">
+                    <button class="print-control-btn" onclick="selectAllForPrint()">☑️ Mind kijelölés</button>
+                    <button class="print-control-btn" onclick="deselectAllForPrint()">☐ Mind törlés</button>
+                </div>
+                <button onclick="window.print()">PDF</button>
+            </div>
+        </div>
+
+        <!-- Státusz nézet oldal (összes ház státusz szerint) -->
+        <div id="statusViewPage" class="page">
+            <button class="back-btn" onclick="showHomePage()">← Portfólió</button>
+            
+            <h2 id="statusViewTitle"></h2>
+            
+            <div class="events-list" id="statusViewList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>Nincsenek események ezzel a státusszal</p>
+                </div>
+            </div>
+
+            <!-- PDF gomb és kiválasztás gombok az oldal alján -->
+            <div class="pdf-btn-container" id="pdfBtnStatus">
+                <div class="print-controls">
+                    <button class="print-control-btn" onclick="selectAllForPrint()">☑️ Mind kijelölés</button>
+                    <button class="print-control-btn" onclick="deselectAllForPrint()">☐ Mind törlés</button>
+                </div>
+                <button onclick="window.print()">PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modalok (ugyanazok mint előtte, csak a design változott) -->
+    <div class="modal" id="houseModal">
+        <div class="modal-content">
+            <h2 id="houseModalTitle">Új Ingatlan</h2>
+            <form id="houseForm">
+                <input type="hidden" id="houseId">
+                <div class="form-group">
+                    <label for="houseName">Ingatlan megnevezése</label>
+                    <input type="text" id="houseName" placeholder="pl. Andrássy út 60.">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn-primary btn-cancel" onclick="closeModal('houseModal')">Mégse</button>
+                    <button type="submit" class="btn-primary">Mentés</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <h2 id="eventModalTitle">Új Esemény</h2>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+                <input type="hidden" id="parentId">
+                <input type="hidden" id="currentStatus">
+
+                <div class="form-group">
+                    <label for="eventDate">Kezdő dátum</label>
+                    <input type="date" id="eventDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventStatus">Státusz</label>
+                    <select id="eventStatus" onchange="handleStatusChange()">
+                        <option value="">-- Válassz státuszt --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="closedDateGroup" style="display: none;">
+                    <label for="eventClosedDate">Lezárás dátuma</label>
+                    <input type="date" id="eventClosedDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventType">Esemény típusa</label>
+                    <input type="text" id="eventType" list="eventTypesList" placeholder="Válassz vagy írj be típust">
+                    <datalist id="eventTypesList">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription">Leírás</label>
+                    <textarea id="eventDescription"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventReporter">Bejelentő</label>
+                    <input type="text" id="eventReporter">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventActionPlan" style="color: #d4af37; font-weight: bold;">Tervezett intézkedés</label>
+                    <textarea id="eventActionPlan" rows="4" style="min-height: 100px; font-weight: 600;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Képek</label>
+                    <div class="image-upload-container">
+                        <input type="file" id="eventImages" accept="image/*" multiple style="display: none;" onchange="handleImageSelect(event)">
+                        <button type="button" class="image-upload-btn" onclick="document.getElementById('eventImages').click()">
+                            <span class="paperclip-icon">📎</span>
+                            <span>Képek csatolása</span>
+                        </button>
+                        <div id="imagePreviewContainer" class="image-preview-container"></div>
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="button" class="btn-primary btn-cancel" onclick="closeModal('eventModal')">Mégse</button>
+                    <button type="submit" class="btn-primary">Mentés</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="eventTypesModal">
+        <div class="modal-content">
+            <h2>Eseménytípusok</h2>
+            
+            <div class="form-group">
+                <label for="newTypeName">Új típus hozzáadása</label>
+                <div class="color-picker-group">
+                    <input type="text" id="newTypeName" placeholder="pl. Csőtörés" style="flex: 1;">
+                    <input type="color" id="newTypeColor" value="#d4af37">
+                    <button type="button" class="btn-secondary" onclick="addEventType()">Hozzáad</button>
+                </div>
+            </div>
+
+            <div class="event-types-list" id="eventTypesModalList"></div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn-primary" onclick="closeModal('eventTypesModal')">Bezárás</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <h2>Státuszok kezelése</h2>
+            
+            <div class="form-group">
+                <label>Új státusz hozzáadása</label>
+                <div class="color-picker-group">
+                    <input type="text" id="newStatusName" placeholder="pl. Sürgős" style="flex: 1;">
+                    <input type="color" id="newStatusColor" value="#d4af37">
+                    <input type="number" id="newStatusOrder" placeholder="Sorrend" min="1">
+                    <button type="button" class="btn-secondary" onclick="addStatus()">Hozzáad</button>
+                </div>
+            </div>
+
+            <div class="status-list" id="statusList"></div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn-primary" onclick="closeModal('statusModal')">Bezárás</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== FIREBASE CONFIGURATION =====
+        const firebaseConfig = {
+    apiKey: "AIzaSyDgWexO15icDlEVhRN_JwCTSxzX4y1-o2A",
+    authDomain: "tarsashaz-naplo.vercel.app",
+    projectId: "tarsashaz-naplo",
+    storageBucket: "tarsashaz-naplo.firebasestorage.app",
+    messagingSenderId: "367375211993", // EZT ELLENŐRIZD
+    appId: "1:367375211993:web:03f31cc62725e227092928" // EZT ELLENŐRIZD
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        let currentUser = null;
+        let syncTimeout = null;
+        let selectedImages = []; // Kiválasztott képek tárolása
+
+        // ===== AUTH FUNCTIONS =====
+        function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' }); // <--- Ezt add hozzá!
+    auth.signInWithRedirect(provider);
+        }
+
+        // Handle redirect result on page load
+        auth.getRedirectResult()
+            .then((result) => {
+                if (result.user) {
+                    console.log('Successfully signed in:', result.user.email);
+                }
+            })
+            .catch((error) => {
+                console.error('Auth error:', error);
+                if (error.code === 'auth/unauthorized-domain') {
+                    alert('Domain hiba: ' + error.message);
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert('Bejelentkezési hiba: ' + error.message);
+                }
+            });
+
+        // Auth State Observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showMainApp(user);
+                loadDataFromFirestore();
+            } else {
+                currentUser = null;
+                showLoginScreen();
+            }
+        });
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('syncIndicator').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        function showMainApp(user) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('syncIndicator').classList.remove('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            
+            // Update user info
+            document.getElementById('userName').textContent = user.displayName || user.email;
+            if (user.photoURL) {
+                document.getElementById('userAvatar').src = user.photoURL;
+            }
+        }
+
+        // ===== FIRESTORE SYNC FUNCTIONS =====
+        async function saveToFirestore() {
+            if (!currentUser) return;
+            
+            const syncIndicator = document.getElementById('syncIndicator');
+            const syncText = document.getElementById('syncText');
+            
+            // Megjelenítjük a sync indicator-t
+            syncIndicator.classList.remove('hidden');
+            syncIndicator.classList.add('syncing');
+            syncText.textContent = 'Mentés...';
+            
+            const userData = {
+                houses: houses,
+                events: events,
+                eventTypes: eventTypes,
+                statuses: statuses,
+                lastModified: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            try {
+                await db.collection('users').doc(currentUser.uid).set(userData);
+                syncIndicator.classList.remove('syncing');
+                syncText.textContent = '✓ Mentve';
+                
+                // 2 másodperc múlva ELTŰNIK a sync indicator
+                setTimeout(() => {
+                    syncIndicator.classList.add('hidden');
+                }, 2000);
+            } catch (error) {
+                syncIndicator.classList.remove('syncing');
+                
+                // Better offline detection
+                if (error.code === 'unavailable' || !navigator.onLine) {
+                    syncText.textContent = '📵 Offline - Az adatok csak a készüléken vannak mentve';
+                } else {
+                    syncText.textContent = '✗ Mentési hiba: ' + (error.message || 'Ismeretlen hiba');
+                }
+                
+                console.error('Firestore save error:', error);
+                setTimeout(() => {
+                    syncText.textContent = navigator.onLine ? 'Nem szinkronizálva' : '📵 Offline mód';
+                }, 5000);
+            }
+        }
+
+        function loadDataFromFirestore() {
+            if (!currentUser) return;
+            
+            const syncIndicator = document.getElementById('syncIndicator');
+            const syncText = document.getElementById('syncText');
+            
+            // Megjelenítjük a sync indicator-t
+            syncIndicator.classList.remove('hidden');
+            syncText.textContent = 'Betöltés...';
+            
+            db.collection('users').doc(currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        houses = data.houses || [];
+                        events = data.events || [];
+                        eventTypes = data.eventTypes || defaultEventTypes;
+                        statuses = data.statuses || defaultStatuses;
+                        
+                        // Update localStorage (offline mód támogatás)
+                        localStorage.setItem('tarsashaz_houses', JSON.stringify(houses));
+                        localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+                        localStorage.setItem('tarsashaz_event_types', JSON.stringify(eventTypes));
+                        localStorage.setItem('tarsashaz_statuses', JSON.stringify(statuses));
+                        
+                        // Render UI
+                        renderHouses();
+                        renderEventTypes();
+                        renderStatuses();
+                        renderStatusViewsMenu();
+                        
+                        syncText.textContent = '✓ Betöltve';
+                        
+                        // 2 másodperc múlva ELTŰNIK
+                        setTimeout(() => {
+                            syncIndicator.classList.add('hidden');
+                        }, 2000);
+                    } else {
+                        // First time user - migrate from localStorage if exists
+                        const localHouses = localStorage.getItem('tarsashaz_houses');
+                        if (localHouses) {
+                            houses = JSON.parse(localHouses);
+                            events = JSON.parse(localStorage.getItem('tarsashaz_events')) || [];
+                            eventTypes = JSON.parse(localStorage.getItem('tarsashaz_event_types')) || defaultEventTypes;
+                            statuses = JSON.parse(localStorage.getItem('tarsashaz_statuses')) || defaultStatuses;
+                            
+                            if (houses.length > 0) {
+                                saveToFirestore(); // Upload existing data
+                            }
+                        }
+                        
+                        renderHouses();
+                        renderEventTypes();
+                        renderStatuses();
+                        renderStatusViewsMenu();
+                        
+                        // ELTŰNIK azonnal ha nincs adat
+                        syncIndicator.classList.add('hidden');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Firestore load error:', error);
+                    syncText.textContent = '✗ Betöltési hiba';
+                    
+                    // Fallback to localStorage
+                    houses = JSON.parse(localStorage.getItem('tarsashaz_houses')) || [];
+                    events = JSON.parse(localStorage.getItem('tarsashaz_events')) || [];
+                    eventTypes = JSON.parse(localStorage.getItem('tarsashaz_event_types')) || defaultEventTypes;
+                    statuses = JSON.parse(localStorage.getItem('tarsashaz_statuses')) || defaultStatuses;
+                    
+                    renderHouses();
+                    renderEventTypes();
+                    renderStatuses();
+                    renderStatusViewsMenu();
+                    
+                    // 5 másodperc múlva ELTŰNIK a hibaüzenet is
+                    setTimeout(() => {
+                        syncIndicator.classList.add('hidden');
+                    }, 5000);
+                });
+        }
+
+        // ===== APP DATA =====
+        const defaultEventTypes = [
+            { name: 'Csőtörés', color: '#e74c3c' },
+            { name: 'Karbantartás', color: '#3498db' },
+            { name: 'Közgyűlés', color: '#9b59b6' },
+            { name: 'Bejelentés', color: '#f39c12' },
+            { name: 'Szerelés', color: '#1abc9c' },
+            { name: 'Biztosítás', color: '#34495e' },
+            { name: 'Fizetés', color: '#27ae60' },
+            { name: 'Egyéb', color: '#95a5a6' }
+        ];
+        
+        const defaultStatuses = [
+            { name: 'Feladat', color: '#8B7355', order: 1 },
+            { name: 'Folyamatban', color: '#C0C0C0', order: 2 },
+            { name: 'Ütemezett', color: '#B8860B', order: 3 },
+            { name: 'Lezárva', color: '#2C3E50', order: 4 }
+        ];
+
+        let houses = [];
+        let events = [];
+        let eventTypes = defaultEventTypes;
+        let statuses = defaultStatuses;
+        let printSelectedEvents = []; // Kijelölt események nyomtatáshoz
+
+        let currentHouseId = null;
+        let currentTypeFilter = '';
+
+        // ===== PRINT SELECTION FUNKCIÓK =====
+        
+        // localStorage-ból betöltés
+        // Ellenőrzi hogy egy esemény ki van-e jelölve nyomtatásra
+        function isPrintSelectedEvent(eventId) {
+            return printSelectedEvents.includes(eventId);
+        }
+
+        // Ki/be kapcsolja egy esemény kijelölését
+        function togglePrintSelection(eventId) {
+            const index = printSelectedEvents.indexOf(eventId);
+            const eventGroup = document.querySelector(`.event-group[data-event-id="${eventId}"]`);
+            
+            if (index === -1) {
+                // Kijelölés
+                printSelectedEvents.push(eventId);
+                if (eventGroup) eventGroup.classList.add('print-selected');
+            } else {
+                // Kijelölés törlése
+                printSelectedEvents.splice(index, 1);
+                if (eventGroup) eventGroup.classList.remove('print-selected');
+            }
+        }
+
+        // Mind kijelölés
+        function selectAllForPrint() {
+            // Aktuális nézetben látható események
+            const visibleEventGroups = document.querySelectorAll('.event-group');
+            
+            visibleEventGroups.forEach(group => {
+                const eventId = group.getAttribute('data-event-id');
+                if (eventId && !printSelectedEvents.includes(eventId)) {
+                    printSelectedEvents.push(eventId);
+                    group.classList.add('print-selected');
+                    
+                    // Checkbox frissítése
+                    const checkbox = group.querySelector('.print-checkbox input[type="checkbox"]');
+                    if (checkbox) checkbox.checked = true;
+                }
+            });
+        }
+
+        // Mind törlés
+        function deselectAllForPrint() {
+            // Aktuális nézetben látható események
+            const visibleEventGroups = document.querySelectorAll('.event-group');
+            
+            visibleEventGroups.forEach(group => {
+                const eventId = group.getAttribute('data-event-id');
+                if (eventId) {
+                    const index = printSelectedEvents.indexOf(eventId);
+                    if (index !== -1) {
+                        printSelectedEvents.splice(index, 1);
+                    }
+                    group.classList.remove('print-selected');
+                    
+                    // Checkbox frissítése
+                    const checkbox = group.querySelector('.print-checkbox input[type="checkbox"]');
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+        }
+        
+        function getStatusGradient(statusName) {
+            const gradients = {
+                'Feladat': 'linear-gradient(135deg, #8B7355 0%, #B8956B 50%, #8B7355 100%)',
+                'Folyamatban': 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 50%, #C0C0C0 100%)',
+                'Ütemezett': 'linear-gradient(135deg, #B8860B 0%, #DAA520 50%, #B8860B 100%)',
+                'Lezárva': 'linear-gradient(135deg, #2C3E50 0%, #34495E 50%, #2C3E50 100%)'
+            };
+            return gradients[statusName] || 'linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%)';
+        }
+
+        function filterEventsByType() {
+            currentTypeFilter = document.getElementById('eventTypeFilter').value;
+            renderEvents();
+        }
+
+        function populateEventTypeFilter() {
+            const select = document.getElementById('eventTypeFilter');
+            select.innerHTML = '<option value="">🔍 Összes típus</option>';
+            eventTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                option.textContent = type.name;
+                select.appendChild(option);
+            });
+            if (currentTypeFilter) select.value = currentTypeFilter;
+        }
+
+        // ===== MENÜ KEZELÉS =====
+
+        function toggleMenu() {
+            const menu = document.getElementById('sidebarMenu');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (menu.classList.contains('open')) {
+                closeMenu();
+            } else {
+                menu.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+
+        function closeMenu() {
+            document.getElementById('sidebarMenu').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        // Státusz nézetek menü dinamikus generálása
+        function renderStatusViewsMenu() {
+            const container = document.getElementById('statusViewsMenu');
+            
+            // Státuszok rendezése sorrend szerint, kihagyva a "Lezárva"-t
+            const viewableStatuses = statuses
+                .filter(s => s.name !== 'Lezárva')
+                .sort((a, b) => a.order - b.order);
+            
+            if (viewableStatuses.length === 0) {
+                container.innerHTML = '<p style="padding: 10px; color: #95a5a6; font-size: 13px;">Nincs megjeleníthető státusz</p>';
+                return;
+            }
+
+            // Ikonok meghatározása
+            const getStatusIcon = (name) => {
+                const iconMap = {
+                    'Feladat': '📋',
+                    'Folyamatban': '🔄',
+                    'Ütemezett': '📅',
+                    'Sürgős': '🔥',
+                    'Várakozik': '⏸️',
+                    'Tervezés': '📐'
+                };
+                return iconMap[name] || '◆';
+            };
+
+            let html = '';
+            viewableStatuses.forEach(status => {
+                const icon = getStatusIcon(status.name);
+                html += `
+                    <div class="menu-item" onclick="showStatusView('${status.name}'); closeMenu();">
+                        <span class="menu-item-icon">${icon}</span>
+                        <span>${status.name}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ===== HÁZAK KEZELÉSE =====
+
+        function showHomePage() {
+            // Kijelölések törlése nézet váltáskor
+            printSelectedEvents = [];
+            
+            document.getElementById('homePage').classList.add('active');
+            document.getElementById('eventsPage').classList.remove('active');
+            document.getElementById('statusViewPage').classList.remove('active');
+            document.getElementById('pdfBtnEvents').style.display = 'none';
+            document.getElementById('pdfBtnStatus').style.display = 'none';
+            currentHouseId = null;
+        }
+
+        function showEventsPage(houseId) {
+            // Kijelölések törlése nézet váltáskor
+            printSelectedEvents = [];
+            
+            currentHouseId = houseId;
+            const house = houses.find(h => h.id === houseId);
+            document.getElementById('houseTitle').textContent = house.name;
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('eventsPage').classList.add('active');
+            document.getElementById('statusViewPage').classList.remove('active');
+            document.getElementById('pdfBtnEvents').style.display = 'flex';
+            document.getElementById('pdfBtnStatus').style.display = 'none';
+            renderEvents();
+            populateEventTypeFilter();
+        }
+
+        function showStatusView(statusName) {
+            // Kijelölések törlése nézet váltáskor
+            printSelectedEvents = [];
+            
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('eventsPage').classList.remove('active');
+            document.getElementById('statusViewPage').classList.add('active');
+            document.getElementById('pdfBtnEvents').style.display = 'none';
+            document.getElementById('pdfBtnStatus').style.display = 'flex';
+            
+            const status = statuses.find(s => s.name === statusName);
+            const icon = statusName === 'Feladat' ? '📋' : statusName === 'Folyamatban' ? '🔄' : '📅';
+            document.getElementById('statusViewTitle').textContent = `${icon} ${statusName.toUpperCase()}`;
+            
+            renderStatusView(statusName);
+        }
+
+        function renderStatusView(statusName) {
+            const container = document.getElementById('statusViewList');
+            
+            // Összes esemény ezzel a státusszal
+            const statusEvents = events.filter(e => e.status === statusName && !e.parentId);
+            
+            if (statusEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>Nincsenek események "${statusName}" státusszal</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Házak szerint csoportosítás
+            const eventsByHouse = {};
+            statusEvents.forEach(event => {
+                if (!eventsByHouse[event.houseId]) {
+                    eventsByHouse[event.houseId] = [];
+                }
+                eventsByHouse[event.houseId].push(event);
+            });
+
+            let html = '';
+            const status = statuses.find(s => s.name === statusName);
+
+            // Házanként megjelenítés
+            Object.keys(eventsByHouse).forEach(houseId => {
+                const house = houses.find(h => h.id === houseId);
+                if (!house) return;
+
+                const houseEvents = eventsByHouse[houseId].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                html += `
+                    <div class="status-section">
+                        <h3 style="background-color: ${status.color}20; border-left: 5px solid ${status.color};">
+                            <span style="color: ${status.color};">🏛️</span> ${house.name} (${houseEvents.length})
+                        </h3>
+                `;
+
+                houseEvents.forEach(parent => {
+                    const children = events.filter(e => e.parentId === parent.id)
+                        .sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    const hasChildren = children.length > 0;
+                    const typeColor = getEventTypeColor(parent.type);
+                    const isPrintSelected = isPrintSelectedEvent(parent.id);
+
+                    html += `
+                        <div class="event-group${hasChildren ? ' has-children' : ''}${isPrintSelected ? ' print-selected' : ''}" data-event-id="${parent.id}">
+                            <div class="house-name-for-print">🏛️ ${house.name}</div>
+                            <label class="print-checkbox" onclick="event.stopPropagation();">
+                                <input type="checkbox" ${isPrintSelected ? 'checked' : ''} onchange="togglePrintSelection('${parent.id}')">
+                                <span class="print-checkbox-custom"></span>
+                            </label>
+                            <div class="event-main ${hasChildren ? 'has-children' : ''}" onclick="${hasChildren ? `toggleChildren('${parent.id}')` : ''}">
+                                ${hasChildren ? '<span class="expand-icon" id="icon-' + parent.id + '">▶</span>' : ''}
+                                <div class="event-header">
+                                    <div class="event-dates">
+                                        <span class="event-date">🗓️ ${formatDate(parent.date)}</span>
+                                        ${parent.closedDate ? `<span class="event-closed-date">✅ Lezárva: ${formatDate(parent.closedDate)}</span>` : ''}
+                                    </div>
+                                    <span class="event-type" style="background-color: ${typeColor}">${parent.type}</span>
+                                </div>
+                                ${parent.description ? `<div class="event-description">${parent.description}</div>` : ''}
+                                ${parent.reporter ? `<div class="event-reporter">Bejelentő: ${parent.reporter}</div>` : ''}
+                                ${parent.actionPlan ? `
+                                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                                        <span style="background: linear-gradient(135deg, #9b8a6d 0%, #d4af37 50%, #8b6914 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; display: block; margin-bottom: 6px;">Tervezett intézkedés:</span>
+                                        <div style="color: #000; font-weight: 700; white-space: pre-line;">${parent.actionPlan}</div>
+                                    </div>
+                                ` : ''}
+                                ${renderEventImages(parent)}
+                                <div class="event-actions" onclick="event.stopPropagation()">
+                                    <button class="btn-icon" onclick="addChildEvent('${parent.id}')" title="Kapcsolódó esemény">+</button>
+                                    <button class="btn-secondary" onclick="editEvent('${parent.id}')">Módosítás</button>
+                                    <button class="btn-delete" onclick="deleteEvent('${parent.id}')">Törlés</button>
+                                </div>
+                            </div>
+                            ${hasChildren ? `
+                                <div class="child-events" id="children-${parent.id}">
+                                    ${children.map(child => {
+                                        const childTypeColor = getEventTypeColor(child.type);
+                                        return `
+                                            <div class="child-event">
+                                                <div class="event-header">
+                                                    <div class="event-dates">
+                                                        <span class="event-date">🗓️ ${formatDate(child.date)}</span>
+                                                        ${child.closedDate ? `<span class="event-closed-date">✅ Lezárva: ${formatDate(child.closedDate)}</span>` : ''}
+                                                    </div>
+                                                    <span class="event-type" style="background-color: ${childTypeColor}">${child.type}</span>
+                                                </div>
+                                                ${child.description ? `<div class="event-description">${child.description}</div>` : ''}
+                                                ${child.reporter ? `<div class="event-reporter">Bejelentő: ${child.reporter}</div>` : ''}
+                                                ${child.actionPlan ? `
+                                                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                                                        <span style="background: linear-gradient(135deg, #9b8a6d 0%, #d4af37 50%, #8b6914 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; display: block; margin-bottom: 6px;">Tervezett intézkedés:</span>
+                                                        <div style="color: #000; font-weight: 700; white-space: pre-line;">${child.actionPlan}</div>
+                                                    </div>
+                                                ` : ''}
+                                                ${renderEventImages(child)}
+                                                <div class="event-actions">
+                                                    <button class="btn-secondary" onclick="editEvent('${child.id}')">Módosítás</button>
+                                                    <button class="btn-delete" onclick="deleteEvent('${child.id}')">Törlés</button>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openAddHouseModal() {
+            document.getElementById('houseModalTitle').textContent = 'Új Ingatlan';
+            document.getElementById('houseForm').reset();
+            document.getElementById('houseId').value = '';
+            document.getElementById('houseModal').classList.add('active');
+        }
+
+        function openEditHouseModal(houseId) {
+            const house = houses.find(h => h.id === houseId);
+            document.getElementById('houseModalTitle').textContent = 'Ingatlan szerkesztése';
+            document.getElementById('houseId').value = house.id;
+            document.getElementById('houseName').value = house.name;
+            document.getElementById('houseModal').classList.add('active');
+        }
+
+        document.getElementById('houseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const houseData = {
+                id: document.getElementById('houseId').value || Date.now().toString(),
+                name: document.getElementById('houseName').value,
+                createdAt: Date.now()
+            };
+            const existingIndex = houses.findIndex(h => h.id === houseData.id);
+            if (existingIndex >= 0) {
+                houses[existingIndex] = houseData;
+            } else {
+                houses.push(houseData);
+            }
+            localStorage.setItem('tarsashaz_houses', JSON.stringify(houses));
+            renderHouses();
+            closeModal('houseModal');
+        });
+
+        function deleteHouse(houseId) {
+            if (!confirm('Biztosan törölni szeretnéd ezt az ingatlant?')) return;
+            houses = houses.filter(h => h.id !== houseId);
+            events = events.filter(e => e.houseId !== houseId);
+            localStorage.setItem('tarsashaz_houses', JSON.stringify(houses));
+            localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+            renderHouses();
+        }
+
+        function renderHouses() {
+            const container = document.getElementById('housesList');
+            if (houses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏛️</div>
+                        <p>Prémium Portfólió</p>
+                        <p>Kezdje el első exkluzív ingatlanja hozzáadásával</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // ABC rendezés magyar ékezetes betűkkel
+            const sortedHouses = [...houses].sort((a, b) => a.name.localeCompare(b.name, 'hu'));
+            
+            let html = '';
+            sortedHouses.forEach(house => {
+                const houseEvents = events.filter(e => e.houseId === house.id && !e.parentId);
+                const eventsCount = houseEvents.length;
+                html += `
+                    <div class="house-card" onclick="showEventsPage('${house.id}')">
+                        <div class="house-name">${house.name}</div>
+                        <div class="house-events-count">${eventsCount} esemény</div>
+                        <div class="house-actions" onclick="event.stopPropagation()">
+                            <button class="btn-secondary" onclick="openEditHouseModal('${house.id}')">Módosítás</button>
+                            <button class="btn-delete" onclick="deleteHouse('${house.id}')">Törlés</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function openNewEventModal() {
+            document.getElementById('eventModalTitle').textContent = 'Új Esemény';
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('parentId').value = '';
+            document.getElementById('currentStatus').value = '';
+            document.getElementById('eventDate').valueAsDate = new Date();
+            document.getElementById('closedDateGroup').style.display = 'none';
+            
+            // Képek törlése
+            selectedImages = [];
+            document.getElementById('eventImages').value = '';
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            document.getElementById('eventActionPlan').value = '';
+            
+            populateEventTypeSelect();
+            populateStatusSelect();
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function addChildEvent(parentId) {
+            const parent = events.find(e => e.id === parentId);
+            document.getElementById('eventModalTitle').textContent = `Kapcsolódó: ${parent.type}`;
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('parentId').value = parentId;
+            document.getElementById('currentStatus').value = '';
+            document.getElementById('eventDate').valueAsDate = new Date();
+            document.getElementById('closedDateGroup').style.display = 'none';
+            
+            // Képek törlése
+            selectedImages = [];
+            document.getElementById('eventImages').value = '';
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            document.getElementById('eventActionPlan').value = '';
+            
+            populateEventTypeSelect();
+            populateStatusSelect();
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function handleStatusChange() {
+            const statusSelect = document.getElementById('eventStatus');
+            const closedDateGroup = document.getElementById('closedDateGroup');
+            const closedDateInput = document.getElementById('eventClosedDate');
+            const currentStatus = document.getElementById('currentStatus').value;
+            const lezarvaStatus = statuses.find(s => s.name === 'Lezárva');
+            
+            if (lezarvaStatus && statusSelect.value === lezarvaStatus.name) {
+                closedDateGroup.style.display = 'block';
+                if (currentStatus !== lezarvaStatus.name && !closedDateInput.value) {
+                    closedDateInput.valueAsDate = new Date();
+                }
+            } else {
+                closedDateGroup.style.display = 'none';
+            }
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+    
+    const eventId = document.getElementById('eventId').value || Date.now().toString();
+    const existingIndex = events.findIndex(e => e.id === eventId);
+    
+    // 1. ELMENTJÜK A RÉGI KÉPEKET, HOGY NE TŰNJENEK EL
+    const existingEvent = existingIndex >= 0 ? events[existingIndex] : null;
+    const existingImages = (existingEvent && existingEvent.images) ? existingEvent.images : [];
+    
+    let newImageUrls = [];
+    if (selectedImages.length > 0) {
+        const uploadBtn = this.querySelector('button[type="submit"]');
+        const originalText = uploadBtn.textContent;
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Képek feltöltése...';
+        
+        try {
+            newImageUrls = await uploadImages(eventId);
+        } catch (error) {
+            console.error("Hiba:", error);
+            alert("Nem sikerült a képek feltöltése.");
+        }
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = originalText;
+    }
+
+    // 2. ÖSSZEFÉSÜLJÜK: Régi képek + Új képek
+    const allImages = [...existingImages, ...newImageUrls];
+
+    // ALAPÉRTELMEZETT ÉRTÉKEK: Semmi nem kötelező!
+    const newStatus = document.getElementById('eventStatus').value;
+    const finalStatus = newStatus || (existingEvent ? existingEvent.status : statuses[0]?.name || 'Feladat');
+    
+    const newType = document.getElementById('eventType').value;
+    const finalType = newType || (existingEvent ? existingEvent.type : 'Egyéb');
+
+    const eventData = {
+        id: eventId,
+        houseId: currentHouseId,
+        parentId: document.getElementById('parentId').value || null,
+        date: document.getElementById('eventDate').value,
+        status: finalStatus, // Alapértelmezett: első státusz
+        closedDate: document.getElementById('eventClosedDate').value || null,
+        type: finalType, // Alapértelmezett: "Egyéb"
+        description: document.getElementById('eventDescription').value || '', // Lehet üres
+        reporter: document.getElementById('eventReporter').value || '', // Lehet üres
+        actionPlan: document.getElementById('eventActionPlan').value || '', // Lehet üres
+        images: allImages,
+        createdAt: existingEvent ? existingEvent.createdAt : Date.now()
+    };
+
+    if (existingIndex >= 0) {
+        events[existingIndex] = eventData;
+    } else {
+        events.push(eventData);
+    }
+
+    // Mentés localStorage-ba (offline mód támogatás)
+    localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+    
+    // Mentés Firestore-ba
+    await saveToFirestore();
+    renderEvents();
+    renderHouses();
+    
+    // 3. TAKARÍTÁS: Ürítjük a kiválasztott képeket a következőhöz
+    selectedImages = [];
+    document.getElementById('imagePreviewContainer').innerHTML = '';
+    closeModal('eventModal');
+
+        });
+
+        function editEvent(eventId) {
+            const event = events.find(e => e.id === eventId);
+            document.getElementById('eventModalTitle').textContent = 'Esemény szerkesztése';
+            document.getElementById('eventId').value = event.id;
+            document.getElementById('parentId').value = event.parentId || '';
+            document.getElementById('currentStatus').value = event.status;
+            document.getElementById('eventDate').value = event.date;
+            document.getElementById('eventDescription').value = event.description;
+            document.getElementById('eventReporter').value = event.reporter || '';
+            document.getElementById('eventActionPlan').value = event.actionPlan || '';
+            if (event.closedDate) {
+                document.getElementById('eventClosedDate').value = event.closedDate;
+                document.getElementById('closedDateGroup').style.display = 'block';
+            } else {
+                document.getElementById('closedDateGroup').style.display = 'none';
+            }
+            populateEventTypeSelect();
+            populateStatusSelect();
+            
+            // TÍPUS ÉS STATUS BEÁLLÍTÁS - POPULATE UTÁN!
+            document.getElementById('eventType').value = event.type;
+            document.getElementById('eventStatus').value = event.status;
+            
+            // Meglévő képek megjelenítése
+            selectedImages = [];
+            document.getElementById('eventImages').value = '';
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            if (event.images && event.images.length > 0) {
+                imagePreviewContainer.innerHTML = '';
+                event.images.forEach((url, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'image-preview-item';
+                    div.innerHTML = `
+                        <img src="${url}" alt="Kép ${index + 1}">
+                        <button class="image-preview-remove" onclick="removeExistingImage('${eventId}', ${index})">×</button>
+                    `;
+                    imagePreviewContainer.appendChild(div);
+                });
+            } else {
+                imagePreviewContainer.innerHTML = '';
+            }
+            
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function deleteEvent(id) {
+            if (!confirm('Biztosan törölni szeretnéd?')) return;
+            events = events.filter(e => e.id !== id && e.parentId !== id);
+            localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+            
+            // Frissítés attól függően melyik oldalon vagyunk
+            if (document.getElementById('eventsPage').classList.contains('active')) {
+                renderEvents();
+            } else if (document.getElementById('statusViewPage').classList.contains('active')) {
+                const title = document.getElementById('statusViewTitle').textContent;
+                const statusName = title.split(' ')[1];
+                renderStatusView(statusName);
+            }
+            renderHouses();
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('eventsList');
+            let houseEvents = events.filter(e => e.houseId === currentHouseId);
+            
+            // Aktuális ház neve
+            const currentHouse = houses.find(h => h.id === currentHouseId);
+            const currentHouseName = currentHouse ? currentHouse.name : '';
+            
+            // Szűrés típus szerint
+            if (currentTypeFilter) {
+                houseEvents = houseEvents.filter(e => e.type === currentTypeFilter);
+            }
+            if (houseEvents.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><p>Eseménynapló</p></div>`;
+                return;
+            }
+            const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+            let html = '';
+            sortedStatuses.forEach(status => {
+                const statusEvents = houseEvents.filter(e => e.status === status.name && !e.parentId);
+                if (statusEvents.length === 0) return;
+                statusEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                html += `<div class="status-section"><h3 style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(192, 192, 192, 0.1) 100%); border-left: 5px solid ${status.color};"><span style="background: ${getStatusGradient(status.name)}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900;">● ${status.name.toUpperCase()}</span> (${statusEvents.length})</h3>`;
+                statusEvents.forEach(parent => {
+                    const children = houseEvents.filter(e => e.parentId === parent.id).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    const hasChildren = children.length > 0;
+                    const typeColor = getEventTypeColor(parent.type);
+                    const isPrintSelected = isPrintSelectedEvent(parent.id);
+                    html += `<div class="event-group${hasChildren ? ' has-children' : ''}${isPrintSelected ? ' print-selected' : ''}" data-event-id="${parent.id}">`;
+                    html += `<div class="house-name-for-print">🏛️ ${currentHouseName}</div>`;
+                    html += `<label class="print-checkbox" onclick="event.stopPropagation();">
+                        <input type="checkbox" ${isPrintSelected ? 'checked' : ''} onchange="togglePrintSelection('${parent.id}')">
+                        <span class="print-checkbox-custom"></span>
+                    </label>`;
+                    html += `<div class="event-main ${hasChildren ? 'has-children' : ''}" onclick="${hasChildren ? `toggleChildren('${parent.id}')` : ''}">`;
+                    if (hasChildren) html += `<span class="expand-icon" id="icon-${parent.id}">▶</span>`;
+                    html += `<div class="event-header"><div class="event-dates"><span class="event-date">🗓️ ${formatDate(parent.date)}</span>`;
+                    if (parent.closedDate) html += `<span class="event-closed-date">✅ Lezárva: ${formatDate(parent.closedDate)}</span>`;
+                    html += `</div><span class="event-type" style="background-color: ${typeColor}">${parent.type}</span></div>`;
+                    if (parent.description) html += `<div class="event-description">${parent.description}</div>`;
+                    if (parent.reporter) html += `<div class="event-reporter">Bejelentő: ${parent.reporter}</div>`;
+                    if (parent.actionPlan) html += `
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                            <span style="background: linear-gradient(135deg, #9b8a6d 0%, #d4af37 50%, #8b6914 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; display: block; margin-bottom: 6px;">Tervezett intézkedés:</span>
+                            <div style="color: #000; font-weight: 700; white-space: pre-line;">${parent.actionPlan}</div>
+                        </div>
+                    `;
+                    html += renderEventImages(parent);
+                    html += `<div class="event-actions" onclick="event.stopPropagation()">`;
+                    html += `<button class="btn-icon" onclick="addChildEvent('${parent.id}')" title="Kapcsolódó">+</button>`;
+                    html += `<button class="btn-secondary" onclick="editEvent('${parent.id}')">Módosítás</button>`;
+                    html += `<button class="btn-delete" onclick="deleteEvent('${parent.id}')">Törlés</button></div></div>`;
+                    if (hasChildren) {
+                        html += `<div class="child-events" id="children-${parent.id}">`;
+                        children.forEach(child => {
+                            const childTypeColor = getEventTypeColor(child.type);
+                            html += `<div class="child-event"><div class="event-header"><div class="event-dates">`;
+                            html += `<span class="event-date">🗓️ ${formatDate(child.date)}</span>`;
+                            if (child.closedDate) html += `<span class="event-closed-date">✅ Lezárva: ${formatDate(child.closedDate)}</span>`;
+                            html += `</div><span class="event-type" style="background-color: ${childTypeColor}">${child.type}</span></div>`;
+                            if (child.description) html += `<div class="event-description">${child.description}</div>`;
+                            if (child.reporter) html += `<div class="event-reporter">Bejelentő: ${child.reporter}</div>`;
+                            if (child.actionPlan) html += `
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                                    <span style="background: linear-gradient(135deg, #9b8a6d 0%, #d4af37 50%, #8b6914 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; display: block; margin-bottom: 6px;">Tervezett intézkedés:</span>
+                                    <div style="color: #000; font-weight: 700; white-space: pre-line;">${child.actionPlan}</div>
+                                </div>
+                            `;
+                            html += renderEventImages(child);
+                            html += `<div class="event-actions"><button class="btn-secondary" onclick="editEvent('${child.id}')">Módosítás</button>`;
+                            html += `<button class="btn-delete" onclick="deleteEvent('${child.id}')">Törlés</button></div></div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                });
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleChildren(parentId) {
+            const childrenDiv = document.getElementById(`children-${parentId}`);
+            const icon = document.getElementById(`icon-${parentId}`);
+            if (childrenDiv.classList.contains('open')) {
+                childrenDiv.classList.remove('open');
+                icon.classList.remove('open');
+            } else {
+                childrenDiv.classList.add('open');
+                icon.classList.add('open');
+            }
+        }
+
+        function openEventTypesModal() {
+            renderEventTypes();
+            document.getElementById('eventTypesModal').classList.add('active');
+        }
+
+        function addEventType() {
+            const name = document.getElementById('newTypeName').value.trim();
+            const color = document.getElementById('newTypeColor').value;
+            if (!name) { alert('Adj meg nevet!'); return; }
+            if (eventTypes.find(t => t.name === name)) { alert('Már létezik!'); return; }
+            eventTypes.push({ name, color });
+            localStorage.setItem('tarsashaz_event_types', JSON.stringify(eventTypes));
+            document.getElementById('newTypeName').value = '';
+            document.getElementById('newTypeColor').value = '#d4af37';
+            renderEventTypes();
+            populateEventTypeSelect();
+        }
+
+        function changeEventTypeColor(typeName) {
+            const newColor = prompt('Új szín (pl. #d4af37):');
+            if (!newColor) return;
+            const type = eventTypes.find(t => t.name === typeName);
+            if (type) {
+                type.color = newColor;
+                localStorage.setItem('tarsashaz_event_types', JSON.stringify(eventTypes));
+                renderEventTypes();
+                renderEvents();
+            }
+        }
+
+        function deleteEventType(typeName) {
+            if (!confirm(`Törlöd: "${typeName}"?`)) return;
+            eventTypes = eventTypes.filter(t => t.name !== typeName);
+            localStorage.setItem('tarsashaz_event_types', JSON.stringify(eventTypes));
+            renderEventTypes();
+            populateEventTypeSelect();
+        }
+
+        function renderEventTypes() {
+            const container = document.getElementById('eventTypesModalList');
+            if (!container) return; // Biztonsági ellenőrzés
+            
+            let html = '';
+            eventTypes.forEach(type => {
+                html += `<div class="event-type-item"><div class="event-type-color" style="background-color: ${type.color}"></div>`;
+                html += `<div class="event-type-name">${type.name}</div>`;
+                html += `<button class="btn-secondary" onclick="changeEventTypeColor('${type.name}')">Szín</button>`;
+                html += `<button class="btn-delete" onclick="deleteEventType('${type.name}')">Törlés</button></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function populateEventTypeSelect() {
+            const datalist = document.getElementById('eventTypesList');
+            if (!datalist) return; // Biztonsági ellenőrzés
+            
+            datalist.innerHTML = '';
+            eventTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                datalist.appendChild(option);
+            });
+        }
+
+        function getEventTypeColor(typeName) {
+            const type = eventTypes.find(t => t.name === typeName);
+            return type ? type.color : '#95a5a6';
+        }
+
+        function openStatusModal() {
+            renderStatuses();
+            document.getElementById('statusModal').classList.add('active');
+        }
+
+        function addStatus() {
+            const name = document.getElementById('newStatusName').value.trim();
+            const color = document.getElementById('newStatusColor').value;
+            const order = parseInt(document.getElementById('newStatusOrder').value);
+            if (!name) { alert('Adj meg nevet!'); return; }
+            if (!order || order < 1) { alert('Adj meg sorrendet!'); return; }
+            if (statuses.find(s => s.name === name)) { alert('Már létezik!'); return; }
+            statuses.push({ name, color, order });
+            localStorage.setItem('tarsashaz_statuses', JSON.stringify(statuses));
+            document.getElementById('newStatusName').value = '';
+            document.getElementById('newStatusColor').value = '#d4af37';
+            document.getElementById('newStatusOrder').value = '';
+            renderStatuses();
+            populateStatusSelect();
+            renderStatusViewsMenu();
+        }
+
+        function changeStatusColor(statusName) {
+            const newColor = prompt('Új szín (pl. #d4af37):');
+            if (!newColor) return;
+            const status = statuses.find(s => s.name === statusName);
+            if (status) {
+                status.color = newColor;
+                localStorage.setItem('tarsashaz_statuses', JSON.stringify(statuses));
+                renderStatuses();
+                renderEvents();
+                renderStatusViewsMenu();
+            }
+        }
+
+        function changeStatusOrder(statusName) {
+            const newOrder = prompt('Új sorrend szám:');
+            if (!newOrder) return;
+            const order = parseInt(newOrder);
+            if (isNaN(order) || order < 1) { alert('Érvényes számot adj meg!'); return; }
+            const status = statuses.find(s => s.name === statusName);
+            if (status) {
+                status.order = order;
+                localStorage.setItem('tarsashaz_statuses', JSON.stringify(statuses));
+                renderStatuses();
+                renderEvents();
+                renderStatusViewsMenu();
+            }
+        }
+
+        function deleteStatus(statusName) {
+            if (!confirm(`Törlöd: "${statusName}"?`)) return;
+            statuses = statuses.filter(s => s.name !== statusName);
+            localStorage.setItem('tarsashaz_statuses', JSON.stringify(statuses));
+            renderStatuses();
+            populateStatusSelect();
+            renderStatusViewsMenu();
+        }
+
+        function renderStatuses() {
+            const container = document.getElementById('statusList');
+            const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+            let html = '';
+            sortedStatuses.forEach(status => {
+                html += `<div class="status-item"><span class="status-order">${status.order}</span>`;
+                html += `<div class="status-color" style="background-color: ${status.color}"></div>`;
+                html += `<div class="status-name">${status.name}</div>`;
+                html += `<button class="btn-secondary" onclick="changeStatusOrder('${status.name}')">Sorrend</button>`;
+                html += `<button class="btn-secondary" onclick="changeStatusColor('${status.name}')">Szín</button>`;
+                html += `<button class="btn-delete" onclick="deleteStatus('${status.name}')">Törlés</button></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function populateStatusSelect() {
+            const select = document.getElementById('eventStatus');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">-- Válassz státuszt --</option>';
+            const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+            sortedStatuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status.name;
+                option.textContent = status.name;
+                select.appendChild(option);
+            });
+            if (currentValue) select.value = currentValue;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0'); // FIX: +1 eltávolítva
+            return `${year}. ${month}. ${day}.`;
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) closeModal(this.id);
+            });
+        });
+
+        // ===== KÉPKEZELŐ FUNKCIÓK =====
+        function handleImageSelect(event) {
+            const files = Array.from(event.target.files);
+            selectedImages = selectedImages.concat(files);
+            renderImagePreviews();
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('imagePreviewContainer');
+            if (selectedImages.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = '';
+            selectedImages.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'image-preview-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="image-preview-remove" onclick="removeSelectedImage(${index})">×</button>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeSelectedImage(index) {
+            selectedImages.splice(index, 1);
+            renderImagePreviews();
+        }
+
+        function removeExistingImage(eventId, imageIndex) {
+            if (!confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
+            
+            const event = events.find(e => e.id === eventId);
+            if (event && event.images) {
+                // URL mentése törléshez
+                const imageUrl = event.images[imageIndex];
+                
+                // Törlés a tömböl
+                event.images.splice(imageIndex, 1);
+                
+                // Mentés
+                localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+                
+                // Kép törlése Storage-ből (opcionális - ha szeretnéd tisztán tartani)
+                try {
+                    const imageRef = storage.refFromURL(imageUrl);
+                    imageRef.delete().catch(err => console.log('Image delete error:', err));
+                } catch (err) {
+                    console.log('Image reference error:', err);
+                }
+                
+                // Előnézet frissítése
+                const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+                imagePreviewContainer.innerHTML = '';
+                if (event.images.length > 0) {
+                    event.images.forEach((url, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'image-preview-item';
+                        div.innerHTML = `
+                            <img src="${url}" alt="Kép ${index + 1}">
+                            <button class="image-preview-remove" onclick="removeExistingImage('${eventId}', ${index})">×</button>
+                        `;
+                        imagePreviewContainer.appendChild(div);
+                    });
+                }
+            }
+        }
+
+        async function uploadImages(eventId) {
+            if (selectedImages.length === 0) return [];
+            
+            const uploadPromises = selectedImages.map(async (file, index) => {
+                const timestamp = Date.now();
+                const filename = `${eventId}_${timestamp}_${index}.${file.name.split('.').pop()}`;
+                const storageRef = storage.ref(`event-images/${filename}`);
+                
+                try {
+                    await storageRef.put(file);
+                    const url = await storageRef.getDownloadURL();
+                    return url;
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    return null;
+                }
+            });
+
+            const urls = await Promise.all(uploadPromises);
+            return urls.filter(url => url !== null);
+        }
+
+        function renderEventImages(event) {
+            if (!event.images || event.images.length === 0) return '';
+            
+            let html = `<div class="event-images" data-image-count="${event.images.length}">`;
+            
+            // Első 2 kép mutatása
+            const displayCount = Math.min(2, event.images.length);
+            for (let i = 0; i < displayCount; i++) {
+                html += `
+                    <div class="event-thumbnail" onclick="openImagePopup('${event.id}', ${i})">
+                        <img src="${event.images[i]}" alt="Kép ${i + 1}">
+                    </div>
+                `;
+            }
+            
+            // "..." ha több kép van
+            if (event.images.length > 2) {
+                html += `<span class="event-images-more" onclick="openImagePopup('${event.id}', 0)">+${event.images.length - 2}</span>`;
+            }
+            
+            html += '</div>';
+            
+            // Képszám jelzés nyomtatáshoz (csak nyomtatáskor látszik)
+            html += `<div class="event-images-print-note">📷 +${event.images.length} kép</div>`;
+            
+            return html;
+        }
+
+        let currentPopupImages = [];
+        let currentPopupIndex = 0;
+
+        function openImagePopup(eventId, startIndex = 0) {
+            const event = events.find(e => e.id === eventId);
+            if (!event || !event.images || event.images.length === 0) return;
+            
+            currentPopupImages = event.images;
+            currentPopupIndex = startIndex;
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'image-popup-overlay';
+            overlay.id = 'imagePopup';
+            overlay.onclick = (e) => {
+                if (e.target === overlay) closeImagePopup();
+            };
+            
+            updatePopupContent(overlay);
+            document.body.appendChild(overlay);
+        }
+
+        function updatePopupContent(overlay) {
+            const content = `
+                <div class="image-popup-content">
+                    <button class="image-popup-close" onclick="closeImagePopup()">×</button>
+                    <img src="${currentPopupImages[currentPopupIndex]}" class="image-popup-img" alt="Kép ${currentPopupIndex + 1}">
+                    ${currentPopupImages.length > 1 ? `
+                        <div class="image-popup-nav">
+                            <button onclick="previousImage()" ${currentPopupIndex === 0 ? 'disabled' : ''}>◀ Előző</button>
+                            <span>${currentPopupIndex + 1} / ${currentPopupImages.length}</span>
+                            <button onclick="nextImage()" ${currentPopupIndex === currentPopupImages.length - 1 ? 'disabled' : ''}>Következő ▶</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            overlay.innerHTML = content;
+        }
+
+        function closeImagePopup() {
+            const popup = document.getElementById('imagePopup');
+            if (popup) popup.remove();
+        }
+
+        function previousImage() {
+            if (currentPopupIndex > 0) {
+                currentPopupIndex--;
+                const overlay = document.getElementById('imagePopup');
+                updatePopupContent(overlay);
+            }
+        }
+
+        function nextImage() {
+            if (currentPopupIndex < currentPopupImages.length - 1) {
+                currentPopupIndex++;
+                const overlay = document.getElementById('imagePopup');
+                updatePopupContent(overlay);
+            }
+        }
+
+        // ===== PRINT HANDLER (Nyomtatás előtt kinyitja az összes child eseményt) =====
+        window.addEventListener('beforeprint', function() {
+            // Nyitja ki az összes gyerek eseményt
+            document.querySelectorAll('.child-events').forEach(div => {
+                div.classList.add('open');
+            });
+        });
+
+        window.addEventListener('afterprint', function() {
+            // Bezárja vissza a gyerek eseményeket nyomtatás után
+            document.querySelectorAll('.child-events').forEach(div => {
+                div.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

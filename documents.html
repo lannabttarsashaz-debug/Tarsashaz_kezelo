@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Property – Dokumentumtár</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(212,175,55,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(184,134,11,0.1) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px; margin: 0 auto;
+            background: rgba(255,255,255,0.98); border-radius: 30px; padding: 50px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.5), 0 0 1px 1px rgba(212,175,55,0.3);
+            position: relative; z-index: 1;
+        }
+
+        .container::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 30px 30px 0 0;
+        }
+
+        .back-btn {
+            background: none; border: none; color: #d4af37; font-size: 14px;
+            font-weight: 700; font-family: 'Montserrat', sans-serif;
+            cursor: pointer; padding: 8px 0; letter-spacing: 0.5px;
+            transition: opacity 0.2s; margin-bottom: 10px; display: block;
+        }
+        .back-btn:hover { opacity: 0.7; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; font-size: 2.8em; font-weight: 900;
+        }
+
+        .subtitle {
+            text-align: center; color: #95a5a6; font-size: 13px;
+            letter-spacing: 3px; text-transform: uppercase; margin-bottom: 35px;
+        }
+
+        .top-bar {
+            display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; align-items: center;
+        }
+
+        .search-input {
+            flex: 1; min-width: 200px; padding: 12px 20px;
+            border: 2px solid #ecf0f1; border-radius: 50px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px;
+            color: #2c3e50; outline: none; transition: border-color 0.3s;
+        }
+        .search-input:focus { border-color: #d4af37; }
+
+        .cat-filter {
+            padding: 12px 20px; border: 2px solid #ecf0f1; border-radius: 50px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px;
+            color: #2c3e50; outline: none; cursor: pointer; background: white;
+            transition: border-color 0.3s;
+        }
+        .cat-filter:focus { border-color: #d4af37; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37);
+            background-size: 200%; color: #1a1a2e; border: none;
+            padding: 12px 28px; border-radius: 50px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700;
+            font-size: 14px; cursor: pointer; transition: all 0.3s;
+            white-space: nowrap; box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+        .btn-primary:hover {
+            background-position: right; transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212,175,55,0.4);
+        }
+        .btn-cancel { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+        .btn-cancel:hover { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
+
+        /* DOCS GRID */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .doc-card {
+            background: white; border: 2px solid #ecf0f1;
+            border-radius: 20px; padding: 25px;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+
+        .doc-card::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 6px; height: 100%;
+            background: linear-gradient(180deg, #d4af37, #f4e5c3);
+        }
+
+        .doc-card:hover {
+            border-color: #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.2);
+            transform: translateY(-3px);
+        }
+
+        .doc-icon { font-size: 2.5em; margin-bottom: 12px; display: block; }
+
+        .doc-category {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; margin-bottom: 10px;
+            background: linear-gradient(135deg, #d4af37, #f4e5c3); color: #1a1a2e;
+        }
+
+        .doc-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em; font-weight: 700; color: #2c3e50;
+            margin-bottom: 6px; line-height: 1.3;
+        }
+
+        .doc-house {
+            font-size: 12px; color: #7f8c8d; margin-bottom: 8px;
+        }
+
+        .doc-desc {
+            font-size: 12px; color: #95a5a6; line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .doc-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 12px; border-top: 1px solid #ecf0f1;
+            font-size: 11px; color: #bdc3c7;
+        }
+
+        .doc-actions { display: flex; gap: 6px; }
+
+        .btn-icon {
+            background: none; border: 1px solid #ecf0f1; border-radius: 8px;
+            padding: 5px 10px; font-size: 13px; cursor: pointer;
+            font-family: 'Montserrat', sans-serif; color: #7f8c8d; transition: all 0.2s;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-icon:hover { border-color: #d4af37; color: #d4af37; }
+        .btn-delete { color: #e74c3c; }
+        .btn-delete:hover { border-color: #e74c3c !important; color: #e74c3c !important; }
+
+        /* UPLOAD PROGRESS */
+        .upload-progress {
+            display: none; margin-top: 15px; padding: 12px 16px;
+            background: #f8f9fa; border-radius: 12px; border: 2px solid #ecf0f1;
+        }
+
+        .upload-progress-bar-wrap {
+            background: #ecf0f1; border-radius: 10px; height: 8px; margin-top: 8px;
+        }
+
+        .upload-progress-bar {
+            background: linear-gradient(90deg, #d4af37, #f4e5c3);
+            height: 100%; border-radius: 10px; transition: width 0.3s;
+            width: 0%;
+        }
+
+        .upload-label {
+            font-size: 12px; color: #7f8c8d; font-weight: 600;
+        }
+
+        /* FILE INPUT */
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            width: 100%; padding: 12px 18px;
+            border: 2px dashed #d4af37; border-radius: 12px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px;
+            color: #2c3e50; cursor: pointer; background: #fffef8;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal.open { display: flex; }
+
+        .modal-content {
+            background: white; border-radius: 25px; padding: 40px;
+            width: 100%; max-width: 560px; max-height: 90vh;
+            overflow-y: auto; position: relative;
+        }
+        .modal-content::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 25px 25px 0 0;
+        }
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif; font-size: 1.8em;
+            color: #2c3e50; margin-bottom: 25px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 700;
+            color: #7f8c8d; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 18px;
+            border: 2px solid #ecf0f1; border-radius: 12px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px;
+            color: #2c3e50; outline: none; transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d4af37; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-buttons { display: flex; gap: 12px; margin-top: 25px; }
+
+        .mode-tabs {
+            display: flex; gap: 10px; margin-bottom: 20px;
+        }
+        .mode-tab {
+            flex: 1; padding: 10px; border: 2px solid #ecf0f1; border-radius: 12px;
+            cursor: pointer; text-align: center; font-size: 13px; font-weight: 600;
+            color: #7f8c8d; transition: all 0.2s;
+        }
+        .mode-tab.active { border-color: #d4af37; color: #d4af37; background: #fffef8; }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: #95a5a6; }
+        .empty-state-icon { font-size: 4em; margin-bottom: 20px; }
+        .hidden { display: none !important; }
+
+        /* HAMBURGER MENU */
+        .hamburger-btn {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 3000;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #1a1a2e;
+            font-weight: 300;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .hamburger-btn:active { transform: scale(0.98); }
+
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+            z-index: 2500;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 100px 30px 30px 30px;
+        }
+
+        .sidebar-menu.open { right: 0; }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active { opacity: 1; pointer-events: all; }
+
+        .menu-section { margin-bottom: 35px; }
+
+        .menu-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d4af37;
+            letter-spacing: 1px;
+        }
+
+        .module-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .module-menu-card {
+            background: linear-gradient(160deg, #fffbe6 0%, #f5e6b0 50%, #e8c94a 100%);
+            border: 2px solid #1a1a1a;
+            border-radius: 14px;
+            padding: 14px 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+
+        .module-menu-card:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,175,55,0.5), inset 0 1px 0 rgba(255,255,255,0.7);
+            border-color: #000;
+        }
+
+        .module-menu-card:active { transform: translateY(0) scale(0.98); }
+
+        .module-menu-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        .module-menu-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+            font-family: 'Montserrat', sans-serif;
+            display: block;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hamburger Menu Button -->
+<button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMenu()"></div>
+
+<!-- Sidebar Menu -->
+<div class="sidebar-menu" id="sidebarMenu">
+    <div class="menu-section">
+        <div class="menu-section-title">MODULOK</div>
+        <div class="module-menu-grid">
+            <a href="index.html" class="module-menu-card">
+                <span class="module-menu-icon">📋</span>
+                <span class="module-menu-label">Eseménynapló</span>
+            </a>
+            <a href="contacts.html" class="module-menu-card">
+                <span class="module-menu-icon">📇</span>
+                <span class="module-menu-label">Névjegyek</span>
+            </a>
+            <a href="notes.html" class="module-menu-card">
+                <span class="module-menu-icon">📝</span>
+                <span class="module-menu-label">Jegyzetek</span>
+            </a>
+            <a href="documents.html" class="module-menu-card">
+                <span class="module-menu-icon">🗂️</span>
+                <span class="module-menu-label">Dok.tár</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="loginScreen" class="empty-state">
+        <div class="empty-state-icon">🔐</div>
+        <p>A dokumentumtár megtekintéséhez bejelentkezés szükséges.</p>
+        <br>
+        <button class="btn-primary" onclick="signInWithGoogle()">Bejelentkezés Google-lel</button>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <h1>🗂️ Dokumentumtár</h1>
+        <p class="subtitle">Kötvények · Okiratok · Szerződések</p>
+
+        <div class="top-bar">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="🔍 Keresés dokumentumok között..." oninput="renderDocs()">
+            <select class="cat-filter" id="catFilter" onchange="renderDocs()">
+                <option value="">Összes kategória</option>
+            </select>
+            <button class="btn-primary" onclick="openModal()">✦ Dokumentum hozzáadása</button>
+        </div>
+
+        <div class="docs-grid" id="docsGrid">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">🗂️</div>
+                <p>Még nincs feltöltött dokumentum</p>
+                <p style="font-size:13px;margin-top:8px;">Töltsd fel első dokumentumodat a fenti gombbal</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="docModal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Dokumentum hozzáadása</h2>
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs" id="modeTabs">
+            <div class="mode-tab active" onclick="switchMode('upload')">📤 Fájl feltöltés</div>
+            <div class="mode-tab" onclick="switchMode('link')">🔗 Link / Metaadatok</div>
+        </div>
+
+        <form id="docForm" onsubmit="saveDoc(event)">
+            <input type="hidden" id="docId">
+            <input type="hidden" id="docMode" value="upload">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dokumentum neve *</label>
+                    <input type="text" id="docName" placeholder="pl. Biztosítási kötvény 2025" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategória *</label>
+                    <input type="text" id="docCategory" list="catList"
+                        placeholder="pl. Biztosítás, Alapító okirat..." required>
+                    <datalist id="catList"></datalist>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ingatlan (opcionális)</label>
+                <input type="text" id="docHouse" placeholder="pl. Fő utca 12., vagy hagyja üresen ha általános">
+            </div>
+
+            <!-- UPLOAD MODE -->
+            <div id="uploadSection">
+                <div class="form-group">
+                    <label>Fájl feltöltése</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="docFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls">
+                    </div>
+                    <div class="upload-progress" id="uploadProgress">
+                        <span class="upload-label" id="uploadLabel">Feltöltés...</span>
+                        <div class="upload-progress-bar-wrap">
+                            <div class="upload-progress-bar" id="progressBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINK MODE -->
+            <div id="linkSection" class="hidden">
+                <div class="form-group">
+                    <label>Link / URL</label>
+                    <input type="url" id="docLink" placeholder="https://drive.google.com/...">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Megjegyzés / Leírás</label>
+                <textarea id="docNotes" placeholder="pl. Lejárat: 2026. március, éves díj: 85.000 Ft"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Lejárat dátuma (opcionális)</label>
+                <input type="date" id="docExpiry">
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="closeModal()">Mégse</button>
+                <button type="submit" class="btn-primary" id="saveBtn">Mentés</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDgWexO15icDlEVhRN_JwCTSxzX4y1-o2A",
+        authDomain: "tarsashaz-naplo.vercel.app",
+        projectId: "tarsashaz-naplo",
+        storageBucket: "tarsashaz-naplo.firebasestorage.app",
+        messagingSenderId: "367375211993",
+        appId: "1:367375211993:web:03f31cc62725e227092928"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    let docs = [];
+
+    auth.getRedirectResult().catch(console.error);
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            loadDocs();
+        } else {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+        }
+    });
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        auth.signInWithRedirect(provider);
+    }
+
+    function loadDocs() {
+        db.collection('documents').orderBy('createdAt', 'desc').onSnapshot(snap => {
+            docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            updateCatFilter();
+            renderDocs();
+        });
+    }
+
+    function updateCatFilter() {
+        const cats = [...new Set(docs.map(d => d.category).filter(Boolean))].sort();
+        const filter = document.getElementById('catFilter');
+        const current = filter.value;
+        filter.innerHTML = '<option value="">Összes kategória</option>' +
+            cats.map(c => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+        const dl = document.getElementById('catList');
+        dl.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+    }
+
+    function getDocIcon(category, fileName) {
+        const cat = (category || '').toLowerCase();
+        const file = (fileName || '').toLowerCase();
+        if (cat.includes('biztosít')) return '🛡️';
+        if (cat.includes('alapít') || cat.includes('okirat')) return '📜';
+        if (cat.includes('szerződ')) return '📃';
+        if (cat.includes('számla') || cat.includes('pénzügy')) return '💰';
+        if (file.endsWith('.pdf')) return '📄';
+        if (file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')) return '🖼️';
+        if (file.endsWith('.xlsx') || file.endsWith('.xls')) return '📊';
+        return '🗂️';
+    }
+
+    function renderDocs() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const catFilter = document.getElementById('catFilter').value;
+
+        let filtered = docs.filter(d => {
+            const matchSearch = !search ||
+                d.name?.toLowerCase().includes(search) ||
+                d.category?.toLowerCase().includes(search) ||
+                d.house?.toLowerCase().includes(search) ||
+                d.notes?.toLowerCase().includes(search);
+            const matchCat = !catFilter || d.category === catFilter;
+            return matchSearch && matchCat;
+        });
+
+        const grid = document.getElementById('docsGrid');
+        document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+        Array.from(grid.querySelectorAll('.doc-card')).forEach(el => el.remove());
+
+        filtered.forEach(d => {
+            const card = document.createElement('div');
+            card.className = 'doc-card';
+            const date = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('hu-HU') : '';
+            const expiryText = d.expiry ? `Lejár: ${d.expiry}` : '';
+            const isExpiring = d.expiry && new Date(d.expiry) < new Date(Date.now() + 30 * 86400000);
+            const isExpired = d.expiry && new Date(d.expiry) < new Date();
+
+            card.innerHTML = `
+                <span class="doc-icon">${getDocIcon(d.category, d.fileName)}</span>
+                <div class="doc-category">${escHtml(d.category || 'Egyéb')}</div>
+                <div class="doc-name">${escHtml(d.name)}</div>
+                ${d.house ? `<div class="doc-house">🏛️ ${escHtml(d.house)}</div>` : ''}
+                ${d.notes ? `<div class="doc-desc">${escHtml(d.notes)}</div>` : ''}
+                ${expiryText ? `<div style="font-size:12px;font-weight:700;color:${isExpired ? '#e74c3c' : isExpiring ? '#e67e22' : '#27ae60'};margin-bottom:10px;">
+                    ${isExpired ? '⚠️' : isExpiring ? '⏰' : '✅'} ${expiryText}
+                </div>` : ''}
+                <div class="doc-meta">
+                    <span>${date}</span>
+                    <div class="doc-actions">
+                        ${d.fileUrl ? `<a class="btn-icon" href="${d.fileUrl}" target="_blank" rel="noopener">📥 Letöltés</a>` : ''}
+                        ${d.link ? `<a class="btn-icon" href="${d.link}" target="_blank" rel="noopener">🔗 Link</a>` : ''}
+                        <button class="btn-icon" onclick="editDoc('${d.id}')">✏️</button>
+                        <button class="btn-icon btn-delete" onclick="deleteDoc('${d.id}', '${escHtml(d.name)}', '${d.storagePath || ''}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    let currentMode = 'upload';
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('docMode').value = mode;
+        document.querySelectorAll('.mode-tab').forEach((t, i) => {
+            t.classList.toggle('active', (i === 0 && mode === 'upload') || (i === 1 && mode === 'link'));
+        });
+        document.getElementById('uploadSection').classList.toggle('hidden', mode !== 'upload');
+        document.getElementById('linkSection').classList.toggle('hidden', mode !== 'link');
+    }
+
+    function openModal(id = null) {
+        document.getElementById('docForm').reset();
+        document.getElementById('docId').value = '';
+        document.getElementById('modalTitle').textContent = id ? 'Dokumentum szerkesztése' : 'Dokumentum hozzáadása';
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('modeTabs').style.display = id ? 'none' : 'flex';
+        switchMode('upload');
+
+        if (id) {
+            const d = docs.find(x => x.id === id);
+            if (d) {
+                document.getElementById('docId').value = d.id;
+                document.getElementById('docName').value = d.name || '';
+                document.getElementById('docCategory').value = d.category || '';
+                document.getElementById('docHouse').value = d.house || '';
+                document.getElementById('docNotes').value = d.notes || '';
+                document.getElementById('docExpiry').value = d.expiry || '';
+                document.getElementById('docLink').value = d.link || '';
+                if (d.link) switchMode('link');
+            }
+        }
+        document.getElementById('docModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('docModal').classList.remove('open');
+    }
+
+    function editDoc(id) { openModal(id); }
+
+    async function saveDoc(e) {
+        e.preventDefault();
+        const id = document.getElementById('docId').value;
+        const mode = document.getElementById('docMode').value;
+        const fileInput = document.getElementById('docFile');
+        const file = fileInput.files[0];
+
+        const data = {
+            name: document.getElementById('docName').value.trim(),
+            category: document.getElementById('docCategory').value.trim(),
+            house: document.getElementById('docHouse').value.trim(),
+            notes: document.getElementById('docNotes').value.trim(),
+            expiry: document.getElementById('docExpiry').value,
+            link: mode === 'link' ? document.getElementById('docLink').value.trim() : '',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Mentés...';
+
+        try {
+            // Upload file if provided
+            if (file && mode === 'upload') {
+                const progressWrap = document.getElementById('uploadProgress');
+                const bar = document.getElementById('progressBar');
+                const label = document.getElementById('uploadLabel');
+                progressWrap.style.display = 'block';
+
+                const storagePath = `documents/${Date.now()}_${file.name}`;
+                const ref = storage.ref(storagePath);
+                const uploadTask = ref.put(file);
+
+                await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed',
+                        snap => {
+                            const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                            bar.style.width = pct + '%';
+                            label.textContent = `Feltöltés: ${pct}%`;
+                        },
+                        reject,
+                        async () => {
+                            data.fileUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                            data.fileName = file.name;
+                            data.storagePath = storagePath;
+                            data.fileSize = file.size;
+                            label.textContent = 'Feltöltés kész!';
+                            resolve();
+                        }
+                    );
+                });
+            }
+
+            if (id) {
+                await db.collection('documents').doc(id).update(data);
+            } else {
+                data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('documents').add(data);
+            }
+            closeModal();
+        } catch (err) {
+            alert('Hiba történt: ' + err.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Mentés';
+        }
+    }
+
+    async function deleteDoc(id, name, storagePath) {
+        if (!confirm(`Biztosan törlöd ezt a dokumentumot?\n"${name}"`)) return;
+        if (storagePath) {
+            try { await storage.ref(storagePath).delete(); } catch (e) { /* already deleted */ }
+        }
+        await db.collection('documents').doc(id).delete();
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('docModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // === HAMBURGER MENU ===
+    function toggleMenu() {
+        const menu = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (menu.classList.contains('open')) {
+            closeMenu();
+        } else {
+            menu.classList.add('open');
+            overlay.classList.add('active');
+        }
+    }
+
+    function closeMenu() {
+        document.getElementById('sidebarMenu').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+</script>
+</body>
+</html>

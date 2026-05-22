@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Property – Névjegyek</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(212,175,55,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(184,134,11,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.98);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.5), 0 0 1px 1px rgba(212,175,55,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 30px 30px 0 0;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #d4af37;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            padding: 8px 0;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s;
+        }
+
+        .back-btn:hover { opacity: 0.7; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.8em;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: #2c3e50;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus { border-color: #d4af37; }
+
+        .category-filter {
+            padding: 12px 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: #2c3e50;
+            outline: none;
+            cursor: pointer;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .category-filter:focus { border-color: #d4af37; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37);
+            background-size: 200%;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .btn-primary:hover {
+            background-position: right;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212,175,55,0.4);
+        }
+
+        /* CONTACTS GRID */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .contact-card {
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #d4af37, #f4e5c3);
+        }
+
+        .contact-card:hover {
+            border-color: #d4af37;
+            box-shadow: 0 8px 30px rgba(212,175,55,0.2);
+            transform: translateY(-3px);
+        }
+
+        .contact-category-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #d4af37, #f4e5c3);
+            color: #1a1a2e;
+        }
+
+        .contact-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .contact-person {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contact-info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #34495e;
+        }
+
+        .contact-info-row .icon { font-size: 16px; }
+
+        .contact-info-row a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-info-row a:hover { text-decoration: underline; }
+
+        .contact-note {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 12px;
+            color: #95a5a6;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .contact-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            color: #7f8c8d;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover { border-color: #d4af37; color: #d4af37; }
+
+        .btn-delete { color: #e74c3c; }
+        .btn-delete:hover { border-color: #e74c3c; color: #e74c3c; }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon { font-size: 4em; margin-bottom: 20px; }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.open { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #f4e5c3, #d4af37);
+            border-radius: 25px 25px 0 0;
+        }
+
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 18px;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: #2c3e50;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus { border-color: #d4af37; }
+
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-cancel:hover { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
+
+        /* IMAGE UPLOAD & OCR */
+        .image-upload-section {
+            margin-bottom: 20px;
+            border: 2px dashed #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .image-upload-section:hover { border-color: #d4af37; }
+
+        .image-upload-btn {
+            background: linear-gradient(135deg, #d4af37, #f4e5c3);
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+        }
+
+        .image-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(212,175,55,0.4);
+        }
+
+        .card-image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid #ecf0f1;
+        }
+
+        .ocr-btn {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .ocr-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+        }
+
+        .ocr-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ocr-progress {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .contact-card-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 12px;
+            cursor: pointer;
+            border: 2px solid #ecf0f1;
+            transition: all 0.3s;
+        }
+
+        .contact-card-image:hover {
+            border-color: #d4af37;
+            transform: scale(1.02);
+        }
+
+        .hidden { display: none !important; }
+
+        /* HAMBURGER MENU */
+        .hamburger-btn {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 3000;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5c3 100%);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #1a1a2e;
+            font-weight: 300;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .hamburger-btn:active { transform: scale(0.98); }
+
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+            z-index: 2500;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 100px 30px 30px 30px;
+        }
+
+        .sidebar-menu.open { right: 0; }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active { opacity: 1; pointer-events: all; }
+
+        .menu-section { margin-bottom: 35px; }
+
+        .menu-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d4af37;
+            letter-spacing: 1px;
+        }
+
+        .module-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .module-menu-card {
+            background: linear-gradient(160deg, #fffbe6 0%, #f5e6b0 50%, #e8c94a 100%);
+            border: 2px solid #1a1a1a;
+            border-radius: 14px;
+            padding: 14px 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+
+        .module-menu-card:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,175,55,0.5), inset 0 1px 0 rgba(255,255,255,0.7);
+            border-color: #000;
+        }
+
+        .module-menu-card:active { transform: translateY(0) scale(0.98); }
+
+        .module-menu-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        .module-menu-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+            font-family: 'Montserrat', sans-serif;
+            display: block;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hamburger Menu Button -->
+<button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMenu()"></div>
+
+<!-- Sidebar Menu -->
+<div class="sidebar-menu" id="sidebarMenu">
+    <div class="menu-section">
+        <div class="menu-section-title">MODULOK</div>
+        <div class="module-menu-grid">
+            <a href="index.html" class="module-menu-card">
+                <span class="module-menu-icon">📋</span>
+                <span class="module-menu-label">Eseménynapló</span>
+            </a>
+            <a href="contacts.html" class="module-menu-card">
+                <span class="module-menu-icon">📇</span>
+                <span class="module-menu-label">Névjegyek</span>
+            </a>
+            <a href="notes.html" class="module-menu-card">
+                <span class="module-menu-icon">📝</span>
+                <span class="module-menu-label">Jegyzetek</span>
+            </a>
+            <a href="documents.html" class="module-menu-card">
+                <span class="module-menu-icon">🗂️</span>
+                <span class="module-menu-label">Dok.tár</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Login screen -->
+    <div id="loginScreen" class="empty-state">
+        <div class="empty-state-icon">🔐</div>
+        <p>A névjegyek megtekintéséhez bejelentkezés szükséges.</p>
+        <br>
+        <button class="btn-primary" onclick="signInWithGoogle()">Bejelentkezés Google-lel</button>
+    </div>
+
+    <!-- Main content -->
+    <div id="mainContent" class="hidden">
+        <div class="page-header">
+            <button class="back-btn" onclick="location.href='index.html'">← Főmenü</button>
+        </div>
+        <h1>📇 Névjegyek</h1>
+        <p class="subtitle">Szolgáltatói Névjegyrendszer</p>
+
+        <div class="top-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Keresés név, kategória szerint..." oninput="renderContacts()">
+            <select class="category-filter" id="categoryFilter" onchange="renderContacts()">
+                <option value="">Összes kategória</option>
+            </select>
+            <button class="btn-primary" onclick="openModal()">✦ Új névjegy</button>
+        </div>
+
+        <div class="contacts-grid" id="contactsGrid">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">📇</div>
+                <p>Még nincs névjegy rögzítve</p>
+                <p style="font-size:13px;margin-top:8px;">Adj hozzá szolgáltatókat az "Új névjegy" gombbal</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="contactModal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Új névjegy</h2>
+        <form id="contactForm" onsubmit="saveContact(event)">
+            <input type="hidden" id="contactId">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cégnév / Vállalkozó neve *</label>
+                    <input type="text" id="companyName" placeholder="pl. Kovács Villanyszerelés">
+                </div>
+                <div class="form-group">
+                    <label>Kapcsolattartó személy</label>
+                    <input type="text" id="personName" placeholder="pl. Kovács János">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Kategória / Szakma *</label>
+                <input type="text" id="categoryInput" list="categoryList" placeholder="pl. Villanyszerelő, Vízszerelő...">
+                <datalist id="categoryList"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label>Cím</label>
+                <input type="text" id="address" placeholder="pl. 7400 Kaposvár, Fő utca 12.">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Telefonszám</label>
+                    <input type="tel" id="phone" placeholder="+36 30 123 4567">
+                </div>
+                <div class="form-group">
+                    <label>Telefonszám 2</label>
+                    <input type="tel" id="phone2" placeholder="+36 70 987 6543">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail cím</label>
+                <input type="email" id="email" placeholder="nev@pelda.hu">
+            </div>
+
+            <div class="form-group">
+                <label>Megjegyzés</label>
+                <textarea id="notes" placeholder="pl. Megbízható, gyorsan reagál. Csak hétköznapokon hívható."></textarea>
+            </div>
+
+            <!-- IMAGE UPLOAD SECTION -->
+            <div class="image-upload-section">
+                <input type="file" id="cardImageInput" accept="image/*" style="display:none" onchange="handleCardImageSelect(event)">
+                <button type="button" class="image-upload-btn" onclick="document.getElementById('cardImageInput').click()">
+                    📷 Névjegykártya fotó feltöltése
+                </button>
+                <div id="imagePreview"></div>
+                <div id="ocrProgress" class="ocr-progress"></div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn-primary btn-cancel" onclick="closeModal()">Mégse</button>
+                <button type="submit" class="btn-primary">Mentés</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Firebase & Tesseract - MUST load before our code -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+<script>
+    // Firebase config and init
+    const firebaseConfig = {
+        apiKey: "AIzaSyDgWexO15icDlEVhRN_JwCTSxzX4y1-o2A",
+        authDomain: "tarsashaz-naplo.vercel.app",
+        projectId: "tarsashaz-naplo",
+        storageBucket: "tarsashaz-naplo.firebasestorage.app",
+        messagingSenderId: "367375211993",
+        appId: "1:367375211993:web:03f31cc62725e227092928"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    let contacts = [];
+    let currentUser = null;
+    let selectedCardImage = null;
+    let cardImageUrl = null;
+
+    auth.getRedirectResult().catch(console.error);
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            loadContacts();
+        } else {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+        }
+    });
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        auth.signInWithRedirect(provider);
+    }
+
+    function loadContacts() {
+        db.collection('contacts').orderBy('companyName').onSnapshot(snap => {
+            contacts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            updateCategoryFilter();
+            renderContacts();
+        });
+    }
+
+    function updateCategoryFilter() {
+        const categories = [...new Set(contacts.map(c => c.category).filter(Boolean))].sort();
+        const filter = document.getElementById('categoryFilter');
+        const current = filter.value;
+        filter.innerHTML = '<option value="">Összes kategória</option>' +
+            categories.map(c => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+
+        // datalist for new entries
+        const dl = document.getElementById('categoryList');
+        dl.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+    }
+
+    function renderContacts() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const catFilter = document.getElementById('categoryFilter').value;
+
+        let filtered = contacts.filter(c => {
+            const matchSearch = !search ||
+                c.companyName?.toLowerCase().includes(search) ||
+                c.personName?.toLowerCase().includes(search) ||
+                c.category?.toLowerCase().includes(search) ||
+                c.address?.toLowerCase().includes(search) ||
+                c.phone?.toLowerCase().includes(search) ||
+                c.phone2?.toLowerCase().includes(search) ||
+                c.notes?.toLowerCase().includes(search);
+            const matchCat = !catFilter || c.category === catFilter;
+            return matchSearch && matchCat;
+        });
+
+        const grid = document.getElementById('contactsGrid');
+        document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+
+        // Remove old cards
+        Array.from(grid.querySelectorAll('.contact-card')).forEach(el => el.remove());
+
+        filtered.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'contact-card';
+            card.innerHTML = `
+                <div class="contact-category-badge">${escHtml(c.category || 'Egyéb')}</div>
+                <div class="contact-name">${escHtml(c.companyName)}</div>
+                ${c.cardImageUrl ? `<img src="${c.cardImageUrl}" class="contact-card-image" onclick="window.open('${c.cardImageUrl}', '_blank')" alt="Névjegykártya">` : ''}
+                ${c.personName ? `<div class="contact-person">👤 ${escHtml(c.personName)}</div>` : ''}
+                ${c.address ? `<div class="contact-person">📍 ${escHtml(c.address)}</div>` : ''}
+                <div class="contact-info">
+                    ${c.phone ? `<div class="contact-info-row"><span class="icon">📞</span><a href="tel:${escHtml(c.phone)}">${escHtml(c.phone)}</a></div>` : ''}
+                    ${c.phone2 ? `<div class="contact-info-row"><span class="icon">📱</span><a href="tel:${escHtml(c.phone2)}">${escHtml(c.phone2)}</a></div>` : ''}
+                    ${c.email ? `<div class="contact-info-row"><span class="icon">✉️</span><a href="mailto:${escHtml(c.email)}">${escHtml(c.email)}</a></div>` : ''}
+                </div>
+                ${c.notes ? `<div class="contact-note">${escHtml(c.notes)}</div>` : ''}
+                <div class="contact-actions">
+                    <button class="btn-icon" onclick="editContact('${c.id}')">✏️ Szerkesztés</button>
+                    <button class="btn-icon btn-delete" onclick="deleteContact('${c.id}', '${escHtml(c.companyName)}')">🗑️ Törlés</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function openModal(id = null) {
+        document.getElementById('contactForm').reset();
+        document.getElementById('contactId').value = '';
+        document.getElementById('modalTitle').textContent = id ? 'Névjegy szerkesztése' : 'Új névjegy';
+        
+        // Reset image
+        selectedCardImage = null;
+        cardImageUrl = null;
+        document.getElementById('imagePreview').innerHTML = '';
+        document.getElementById('ocrProgress').textContent = '';
+
+        if (id) {
+            const c = contacts.find(x => x.id === id);
+            if (c) {
+                document.getElementById('contactId').value = c.id;
+                document.getElementById('companyName').value = c.companyName || '';
+                document.getElementById('personName').value = c.personName || '';
+                document.getElementById('categoryInput').value = c.category || '';
+                document.getElementById('address').value = c.address || '';
+                document.getElementById('phone').value = c.phone || '';
+                document.getElementById('phone2').value = c.phone2 || '';
+                document.getElementById('email').value = c.email || '';
+                document.getElementById('notes').value = c.notes || '';
+                
+                // Show existing image
+                if (c.cardImageUrl) {
+                    cardImageUrl = c.cardImageUrl;
+                    document.getElementById('imagePreview').innerHTML = `
+                        <img src="${c.cardImageUrl}" class="card-image-preview" alt="Névjegykártya">
+                    `;
+                }
+            }
+        }
+
+        document.getElementById('contactModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('contactModal').classList.remove('open');
+    }
+
+    function editContact(id) { openModal(id); }
+
+    async function saveContact(e) {
+        e.preventDefault();
+        const id = document.getElementById('contactId').value;
+        
+        // Upload image if new one selected
+        if (selectedCardImage) {
+            console.log('Uploading image:', selectedCardImage.name);
+            const timestamp = Date.now();
+            const filename = `card_${timestamp}.${selectedCardImage.name.split('.').pop()}`;
+            const storageRef = storage.ref(`contact-cards/${filename}`);
+            
+            try {
+                await storageRef.put(selectedCardImage);
+                cardImageUrl = await storageRef.getDownloadURL();
+                console.log('Image uploaded successfully:', cardImageUrl);
+            } catch (err) {
+                console.error('Image upload error:', err);
+                alert('Hiba történt a kép feltöltése során: ' + err.message);
+            }
+        }
+        
+        const data = {
+            companyName: document.getElementById('companyName').value.trim(),
+            personName: document.getElementById('personName').value.trim(),
+            category: document.getElementById('categoryInput').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            phone2: document.getElementById('phone2').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            notes: document.getElementById('notes').value.trim(),
+            cardImageUrl: cardImageUrl || null,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (id) {
+            await db.collection('contacts').doc(id).update(data);
+        } else {
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('contacts').add(data);
+        }
+        
+        closeModal();
+        await loadContacts(); // Refresh the list to show the new/updated contact
+    }
+
+    async function deleteContact(id, name) {
+        if (!confirm(`Biztosan törlöd ezt a névjegyet?\n"${name}"`)) return;
+        await db.collection('contacts').doc(id).delete();
+        await loadContacts(); // Refresh list
+    }
+
+    // === IMAGE & OCR FUNCTIONS ===
+    function handleCardImageSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        selectedCardImage = file;
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = `
+                <img src="${e.target.result}" class="card-image-preview" alt="Névjegykártya">
+                <button type="button" class="ocr-btn" onclick="runOCR('${e.target.result}')">
+                    📋 Szöveg kiolvasása (OCR)
+                </button>
+            `;
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    async function runOCR(imageData) {
+        const progressDiv = document.getElementById('ocrProgress');
+        const ocrBtn = document.querySelector('.ocr-btn');
+        
+        if (ocrBtn) ocrBtn.disabled = true;
+        progressDiv.textContent = 'Szöveg felismerése folyamatban...';
+        
+        try {
+            const result = await Tesseract.recognize(
+                imageData,
+                'hun+eng',
+                {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            const percent = Math.round(m.progress * 100);
+                            progressDiv.textContent = `Feldolgozás: ${percent}%`;
+                        }
+                    }
+                }
+            );
+            
+            const text = result.data.text;
+            parseOCRText(text);
+            progressDiv.textContent = '✅ Kész! Ellenőrizd az adatokat.';
+            
+        } catch (err) {
+            console.error('OCR error:', err);
+            progressDiv.textContent = '❌ Hiba történt a felismerés során.';
+        } finally {
+            if (ocrBtn) ocrBtn.disabled = false;
+        }
+    }
+
+    function parseOCRText(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        
+        // Simple parsing - smart text extraction
+        lines.forEach((line, idx) => {
+            // Phone numbers
+            if (/[\+\d\s\(\)\-]{8,}/.test(line) && line.match(/\d/g)?.length >= 6) {
+                if (!document.getElementById('phone').value) {
+                    document.getElementById('phone').value = line.replace(/[^\d\+\s]/g, '').trim();
+                }
+            }
+            
+            // Email
+            if (line.includes('@') && line.includes('.')) {
+                const emailMatch = line.match(/[\w\.-]+@[\w\.-]+\.\w+/);
+                if (emailMatch && !document.getElementById('email').value) {
+                    document.getElementById('email').value = emailMatch[0];
+                }
+            }
+            
+            // First line as company name
+            if (idx === 0 && line.length > 2 && !document.getElementById('companyName').value) {
+                document.getElementById('companyName').value = line;
+            }
+            
+            // Second line might be person name
+            if (idx === 1 && line.length > 2 && !line.includes('@') && 
+                !document.getElementById('personName').value) {
+                document.getElementById('personName').value = line;
+            }
+        });
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // === HAMBURGER MENU ===
+    function toggleMenu() {
+        const menu = document.getElementById('sidebarMenu');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (menu.classList.contains('open')) {
+            closeMenu();
+        } else {
+            menu.classList.add('open');
+            overlay.classList.add('active');
+        }
+    }
+
+    function closeMenu() {
+        document.getElementById('sidebarMenu').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+</script>
+</body>
+</html>

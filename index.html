@@ -2012,11 +2012,9 @@
         function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' }); // <--- Ezt add hozzá!
-    auth.signInWithPopup(provider).catch(function(error) {
-    console.error(error);
-    alert(error.message);
-});
-    
+    auth.signInWithRedirect(provider);
+        }
+
         // Handle redirect result on page load
         auth.getRedirectResult()
             .then((result) => {

@@ -2009,7 +2009,7 @@
         let selectedImages = []; // Kiválasztott képek tárolása
 
         // ===== AUTH FUNCTIONS =====
-        function signInWithGoogle() {
+        function signInWithGoogle() { alert("Bejelentkezés indul...");
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' }); // <--- Ezt add hozzá!
     auth.signInWithRedirect(provider);
@@ -2789,4 +2789,4 @@
         }
 
         function deleteEvent(id) {
-            if (!confirm('Biztosan törölni szeretnéd?
+            if (!con

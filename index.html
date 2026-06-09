@@ -1998,6 +1998,7 @@
     appId: "1:36707180777:web:ea2b8e01ded15ea123d078"
 };
 
+        window.onerror = function(msg,s,line){alert('Hiba '+line+': '+msg);return false;};
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();

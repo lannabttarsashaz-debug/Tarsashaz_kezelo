@@ -2010,18 +2010,20 @@
 
         // ===== AUTH FUNCTIONS =====
         function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) {
-                auth.signInWithRedirect(provider).catch((error) => {
-                    alert('Bejelentkezési hiba: ' + error.code + '\n' + error.message);
-                });
-            } else {
-                auth.signInWithPopup(provider).catch((error) => {
-                    if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-                        alert('Bejelentkezési hiba: ' + error.code + '\n' + error.message);
-                    }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+        auth.signInWithRedirect(provider);
+    } else {
+        auth.signInWithPopup(provider);
+    }
+        }
+        auth.getRedirectResult().then((result) => {
+    if (result && result.user) {
+        console.log('Sikeres bejelentkezés');
+    }
+}).catch((error) => { console.error(error); });
                 });
             }
         }

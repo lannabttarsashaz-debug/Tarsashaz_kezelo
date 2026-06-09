@@ -2024,20 +2024,6 @@
         console.log('Sikeres bejelentkezés');
     }
 }).catch((error) => { console.error(error); });
-                });
-            }
-        }
-
-        // Redirect eredmény kezelése (mobilos bejelentkezés után)
-        auth.getRedirectResult().then((result) => {
-            if (result && result.user) {
-                console.log('Redirect bejelentkezés sikeres:', result.user.email);
-            }
-        }).catch((error) => {
-            if (error.code !== 'auth/no-current-user') {
-                alert('Redirect hiba: ' + error.code + '\n' + error.message);
-            }
-        });
 
         // Auth State Observer
         auth.onAuthStateChanged((user) => {

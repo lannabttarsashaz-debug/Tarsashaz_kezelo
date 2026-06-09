@@ -1326,7 +1326,6 @@
         .google-icon {
             width: 24px;
             height: 24px;
-            window.onerror = function(msg,s,line){alert('Hiba '+line+': '+msg);return false;};
         }
         
         .sync-indicator {
@@ -1992,14 +1991,13 @@
         // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
     apiKey: "AIzaSyAQaaC5qbMcxI8MTBQifzodyM3ubP_FMTM",
-    authDomain: "tarsashaz-kezelo-ce7d3.firebaseapp.com",
+    authDomain: "tarsashaz-kezelo.vercel.app",
     projectId: "tarsashaz-kezelo-ce7d3",
     storageBucket: "tarsashaz-kezelo-ce7d3.firebasestorage.app",
     messagingSenderId: "36707180777",
     appId: "1:36707180777:web:ea2b8e01ded15ea123d078"
 };
 
-        window.onerror = function(msg,s,line){alert('Hiba '+line+': '+msg);return false;};
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
@@ -2014,13 +2012,30 @@
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithPopup(provider)
-                .catch((error) => {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                auth.signInWithRedirect(provider).catch((error) => {
+                    alert('Bejelentkezési hiba: ' + error.code + '\n' + error.message);
+                });
+            } else {
+                auth.signInWithPopup(provider).catch((error) => {
                     if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
                         alert('Bejelentkezési hiba: ' + error.code + '\n' + error.message);
                     }
                 });
+            }
         }
+
+        // Redirect eredmény kezelése (mobilos bejelentkezés után)
+        auth.getRedirectResult().then((result) => {
+            if (result && result.user) {
+                console.log('Redirect bejelentkezés sikeres:', result.user.email);
+            }
+        }).catch((error) => {
+            if (error.code !== 'auth/no-current-user') {
+                alert('Redirect hiba: ' + error.code + '\n' + error.message);
+            }
+        });
 
         // Auth State Observer
         auth.onAuthStateChanged((user) => {
@@ -2768,22 +2783,4 @@
                     div.className = 'image-preview-item';
                     div.innerHTML = `
                         <img src="${url}" alt="Kép ${index + 1}">
-                        <button class="image-preview-remove" onclick="removeExistingImage('${eventId}', ${index})">×</button>
-                    `;
-                    imagePreviewContainer.appendChild(div);
-                });
-            } else {
-                imagePreviewContainer.innerHTML = '';
-            }
-            
-            document.getElementById('eventModal').classList.add('active');
-        }
-
-        function deleteEvent(id) {
-            if (!confirm('Biztosan törölni szeretnéd?')) return;
-            events = events.filter(e => e.id !== id && e.parentId !== id);
-            localStorage.setItem('tarsashaz_events', JSON.stringify(events));
-            
-            // Frissítés attól függően melyik oldalon vagyunk
-            if (document.getElementById('eventsPage').classList.contains('active')) {
-                render
+                        <button class="image-preview-remove" onclic

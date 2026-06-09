@@ -2014,7 +2014,7 @@
     provider.setCustomParameters({ prompt: 'select_account' });
     const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isMobile) {
-        auth.signInWithRedirect(provider);
+    alert('redirect indul'); auth.signInWithRedirect(provider);
     } else {
         auth.signInWithPopup(provider);
     }

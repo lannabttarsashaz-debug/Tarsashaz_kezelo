@@ -1326,6 +1326,7 @@
         .google-icon {
             width: 24px;
             height: 24px;
+            window.onerror = function(msg,s,line){alert('Hiba '+line+': '+msg);return false;};
         }
         
         .sync-indicator {

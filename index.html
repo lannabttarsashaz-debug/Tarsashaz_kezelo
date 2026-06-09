@@ -2009,27 +2009,16 @@
         let selectedImages = []; // Kiválasztott képek tárolása
 
         // ===== AUTH FUNCTIONS =====
-        function signInWithGoogle() { alert("Bejelentkezés indul...");
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' }); // <--- Ezt add hozzá!
-    auth.signInWithRedirect(provider);
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+                        alert('Bejelentkezési hiba: ' + error.code + '\n' + error.message);
+                    }
+                });
         }
-
-        // Handle redirect result on page load
-        auth.getRedirectResult()
-            .then((result) => {
-                if (result.user) {
-                    console.log('Successfully signed in:', result.user.email);
-                }
-            })
-            .catch((error) => {
-                console.error('Auth error:', error);
-                if (error.code === 'auth/unauthorized-domain') {
-                    alert('Domain hiba: ' + error.message);
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert('Bejelentkezési hiba: ' + error.message);
-                }
-            });
 
         // Auth State Observer
         auth.onAuthStateChanged((user) => {
@@ -2789,4 +2778,11 @@
         }
 
         function deleteEvent(id) {
-            if (!con
+            if (!confirm('Biztosan törölni szeretnéd?')) return;
+            events = events.filter(e => e.id !== id && e.parentId !== id);
+            localStorage.setItem('tarsashaz_events', JSON.stringify(events));
+            
+            // Frissítés attól függően melyik oldalon vagyunk
+            if (document.getElementById('eventsPage').classList.contains('active')) {
+                renderEvents();
+ 

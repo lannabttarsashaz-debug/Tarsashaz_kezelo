@@ -2010,13 +2010,13 @@
 
         // ===== AUTH FUNCTIONS =====
         function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    const isMobile = true;
-    if (isMobile) {
-    alert('redirect indul'); auth.signInWithRedirect(provider);
-    } else {
-        auth.signInWithPopup(provider);
+    try {
+        alert('1. függvény elindult');
+        const provider = new firebase.auth.GoogleAuthProvider();
+        alert('2. auth: ' + (auth ? 'van' : 'NINCS'));
+        auth.signInWithRedirect(provider);
+    } catch(e) {
+        alert('HIBA: ' + e.message);
     }
         }
         auth.getRedirectResult().then((result) => {
